@@ -1,17 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
-import { Process } from "@/types/process";
+import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { Process } from "@/types";
+import { connectDB } from "@/lib/db";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await context.params; // ✅ await params
     const db = await connectDB();
-    const process = await db.collection<Process>("processes").findOne({ _id: new ObjectId(params.id) });
-    if (!process) return NextResponse.json({ error: "Process not found" }, { status: 404 });
+
+    const process = await db
+      .collection<Process>("processes")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!process) {
+      return NextResponse.json({ error: "Process not found" }, { status: 404 });
+    }
 
     return NextResponse.json(process);
-  } catch (err) {
-    console.error("Process error:", err);
-    return NextResponse.json({ error: "Failed to fetch process" }, { status: 500 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

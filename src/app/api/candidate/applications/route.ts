@@ -7,19 +7,56 @@ import { verifyToken } from "@/utils/auth";
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const token = authHeader.split(" ")[1];
     const payload = verifyToken<{ id: string }>(token);
-    if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!payload) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const db = await connectDB();
-    const apps = await db.collection<Application>("applications").find({ candidateId: new ObjectId(payload.id) }).toArray();
+
+    const apps = await db
+      .collection("applications")
+      .aggregate([
+        {
+          $match: { candidateId: new ObjectId(payload.id) },
+        },
+        {
+          $lookup: {
+            from: "processes",
+            localField: "processId",
+            foreignField: "_id",
+            as: "process",
+          },
+        },
+        { $unwind: "$process" },
+        {
+          $project: {
+            _id: 1,
+            status: 1,
+            rounds: 1,
+            createdAt: 1,
+            processId: {
+              _id: "$process._id",
+              title: "$process.title",
+              description: "$process.description",
+            },
+          },
+        },
+      ])
+      .toArray();
 
     return NextResponse.json(apps);
   } catch (err) {
     console.error("Get applications error:", err);
-    return NextResponse.json({ error: "Failed to fetch applications" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch applications" },
+      { status: 500 }
+    );
   }
 }
 
