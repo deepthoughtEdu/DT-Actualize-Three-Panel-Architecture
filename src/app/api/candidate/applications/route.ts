@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const token = authHeader.split(" ")[1];
     const payload = verifyToken<{ id: ObjectId }>(token);
     
-    console.log(payload);
+    // console.log(payload);
     
     if (!payload) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     const { processId } = await req.json();
     // console.log(payload.id);
     const candidateId = new ObjectId(payload.id);
-    console.log(candidateId);
+    // console.log(candidateId);
     
 
     // 🔹 Use service method instead of writing logic here

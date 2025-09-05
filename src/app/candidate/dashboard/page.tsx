@@ -10,7 +10,7 @@ interface RoundProgress {
 
 interface Application {
   _id: string;
-  processId: {
+  process: {
     _id: string;
     title: string;
     description: string;
@@ -27,7 +27,7 @@ useEffect(() => {
   const fetchApplications = async () => {
     try {
       const token = localStorage.getItem("token"); 
-      console.log(token);
+      // console.log(`token: ${token}`);
       // make sure you store token at login
       const res = await fetch("/api/candidate/applications", {
         headers: {
@@ -81,16 +81,19 @@ useEffect(() => {
     <h1 className="mb-6 text-3xl font-bold text-gray-800">My Applications</h1>
 
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {applications.map((app) => (
+      {applications.map((app) =>{
+        console.log(app);
+        
+        return(
         <div
           key={app._id}
           className="rounded-2xl bg-white p-6 shadow-md hover:shadow-lg transition"
         >
           <h2 className="text-xl font-semibold text-gray-800">
-            {app.processId.title}
+            {app.process.title}
           </h2>
           <p className="mb-4 text-sm text-gray-600">
-            {app.processId.description}
+            {app.process.description}
           </p>
 
           <div className="mb-4">
@@ -118,7 +121,7 @@ useEffect(() => {
                   <span className="text-green-600 font-medium">Submitted</span>
                 ) : (
                   <Link
-                    href={`/candidate/processes/${app.processId._id}/round/${round.roundId}`}
+                    href={`/candidate/processes/${app.process._id}/round/${round.roundId}`}
                     className="text-blue-600 hover:underline"
                   >
                     Continue
@@ -128,7 +131,7 @@ useEffect(() => {
             ))}
           </div>
         </div>
-      ))}
+      )})}
     </div>
 
     {/* CTA Section */}
