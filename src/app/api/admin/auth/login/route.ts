@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate JWT
-    const token = generateToken({ id: admin._id?.toString(), email });
+    const token = generateToken({ id: admin._id?.toString(), email, role: 'admin' });
 
     console.log(token);
     return NextResponse.json({ token });

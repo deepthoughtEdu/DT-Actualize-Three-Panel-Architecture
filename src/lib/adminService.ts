@@ -4,7 +4,6 @@ import { Admin } from "@/types";
 import { ObjectId, OptionalId } from "mongodb";
 import bcrypt from "bcryptjs";
 
-// Create a new admin (with password hashing)
 export async function createAdmin(
   data: Omit<Admin, "_id" | "createdAt">
 ) {
