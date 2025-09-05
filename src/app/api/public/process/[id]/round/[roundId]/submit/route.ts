@@ -51,7 +51,7 @@ export async function POST(
       await submissions.insertOne({
         processId: new ObjectId(processId),
         candidateId: new ObjectId(decoded.id),
-        status: "in-progress",
+        status: "applied",
         createdAt: new Date(),
         updatedAt: new Date(),
         answers: newAnswers,

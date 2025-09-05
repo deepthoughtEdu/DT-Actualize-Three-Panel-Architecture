@@ -111,7 +111,7 @@ export class CandidateService {
     const application: Application = {
       candidateId: new ObjectId(candidateId),
       processId: new ObjectId(processId),
-      status: "in-progress",
+      status: "applied",
       createdAt: new Date(),
       rounds: [], // will store round submissions
     };

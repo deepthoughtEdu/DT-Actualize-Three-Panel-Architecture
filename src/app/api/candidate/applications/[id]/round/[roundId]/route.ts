@@ -6,15 +6,19 @@ import { verifyToken } from "@/utils/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string } }
+  context: { params: Promise<{ id: string; roundId: string }> }
 ) {
   try {
+    const params = await context.params; // 👈 await params here
+
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!authHeader)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const token = authHeader.split(" ")[1];
     const payload = verifyToken<{ id: string }>(token);
-    if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!payload)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { answers } = await req.json();
     const db = await connectDB();
@@ -34,6 +38,9 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Submit round error:", err);
-    return NextResponse.json({ error: "Failed to submit round" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to submit round" },
+      { status: 500 }
+    );
   }
 }
