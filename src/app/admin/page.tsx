@@ -39,6 +39,16 @@ export default function AdminDashboardPage() {
             Start a new recruitment workflow from scratch.
           </p>
         </Link>
+
+        <Link
+          href="/admin/register"
+          className="p-6 rounded-2xl shadow-md border hover:shadow-lg transition bg-white"
+        >
+          <h2 className="text-xl font-semibold mb-2">🛡️ Create Admin</h2>
+          <p className="text-gray-500">
+            Authorize other users to manage the platform.
+          </p>
+        </Link>
       </div>
     </div>
   );
