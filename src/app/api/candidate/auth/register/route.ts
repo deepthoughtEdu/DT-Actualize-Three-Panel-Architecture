@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     });
 
     const token = generateToken({
-      id: result.insertedId.toString(),
+      id: result?.insertedId.toString(),
       email,
       role: "candidate",
     });

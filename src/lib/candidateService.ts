@@ -5,49 +5,63 @@ import type { Candidate } from "@/types/candidate";
 import type { Process } from "@/types/process";
 import type { Application } from "@/types/application";
 import { generateToken } from "@/utils/auth";
+import { log } from "console";
+import { verifyPassword } from "@/utils/hash";
 
 export class CandidateService {
   // 🔹 Register candidate
-  static async register(name: string, email: string, password: string) {
-    const db = await connectDB();
-    const existing = await db.collection("candidates").findOne({ email });
-    if (existing) throw new Error("Email already registered");
+ static async register(name: string, email: string, password: string) {
+  const db = await connectDB();
+  const existing = await db.collection("candidates").findOne({ email });
+  if (existing) throw new Error("Email already registered");
 
-    const hashed = await bcrypt.hash(password, 10);
-    const result = await db.collection("candidates").insertOne({
-      name,
-      email,
-      password: hashed,
-      createdAt: new Date(),
-      role: "candidate",
-    });
+  const hashed = await bcrypt.hash(password, 10);
+  const result = await db.collection("candidates").insertOne({
+    name,
+    email,
+    passwordHash: hashed,   // ✅ use consistent field name
+    createdAt: new Date(),
+    role: "candidate",
+  });
 
-    const token = generateToken({
-      id: result.insertedId.toString(),
-      email,
-      role: "candidate",
-    });
+  const candidateId = result.insertedId.toString();
 
-    return { token };
-  }
+  const token = generateToken({
+    id: candidateId,       // ✅ JWT will now carry the real candidate._id
+    email,
+    role: "candidate",
+  });
+
+  return { token, candidateId };
+}
+
 
   // 🔹 Login candidate
   static async login(email: string, password: string) {
-    const db = await connectDB();
-    const candidate = await db.collection("candidates").findOne({ email });
-    if (!candidate) throw new Error("Invalid credentials");
+  const db = await connectDB();
+  const candidate = await db.collection("candidates").findOne({ email });
+  if (!candidate) throw new Error("Invalid credentials");
 
-    const valid = await bcrypt.compare(password, candidate.password);
-    if (!valid) throw new Error("Invalid credentials");
+  console.log(candidate.password);
+  
+  // ✅ compare with passwordHash (not password)
+  const valid = await verifyPassword(password, candidate.password);
+  
+  if (!valid) throw new Error("Invalid credentials");
 
-    const token = generateToken({
-      id: candidate._id.toString(),
-      email: candidate.email,
-      role: "candidate",
-    });
+  const candidateId = candidate._id.toString();
 
-    return { token };
-  }
+  const token = generateToken({
+    id: candidateId,          // ✅ correct candidate._id in JWT
+    email: candidate.email,
+    role: "candidate",
+  });
+  console.log(token,` :`, candidateId);
+  
+
+  return { token, candidateId };
+}
+
 
   // 🔹 Get candidate profile
   static async getProfile(candidateId: string) {
@@ -84,7 +98,7 @@ export class CandidateService {
   }
 
   // 🔹 Apply to a process
-  static async applyToProcess(candidateId: string, processId: string) {
+  static async applyToProcess(candidateId: ObjectId, processId: ObjectId) {
     const db = await connectDB();
 
     const existing = await db.collection("applications").findOne({

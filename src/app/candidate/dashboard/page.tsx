@@ -26,7 +26,9 @@ export default function CandidateDashboard() {
 useEffect(() => {
   const fetchApplications = async () => {
     try {
-      const token = localStorage.getItem("token"); // make sure you store token at login
+      const token = localStorage.getItem("token"); 
+      console.log(token);
+      // make sure you store token at login
       const res = await fetch("/api/candidate/applications", {
         headers: {
           Authorization: `Bearer ${token}`,

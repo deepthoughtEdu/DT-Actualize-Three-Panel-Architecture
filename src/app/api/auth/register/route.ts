@@ -1,33 +1,23 @@
+// src/app/api/auth/register/route.ts
+import { CandidateService } from "@/lib/candidateService";
 import { NextRequest, NextResponse } from "next/server";
-import { createCandidate, getCandidateByEmail } from "@/lib/candidateService";
-import { hashPassword } from "@/utils/hash";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, email, password, resumeUrl } = body;
+    const { name, email, password } = await req.json();
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const existing = await getCandidateByEmail(email);
-    if (existing) {
-      return NextResponse.json({ error: "Candidate already exists" }, { status: 409 });
-    }
+    const { token } = await CandidateService.register(name, email, password);
 
-    const hashedPassword = await hashPassword(password);
-
-    const candidateId = await createCandidate({
-      name,
-      email,
-      password: hashedPassword,
-      resumeUrl,
-    });
-
-    return NextResponse.json({ candidateId, message:"Candidate registered successfully!!"  });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ token, message: "Candidate registered successfully!" });
+  } catch (err: any) {
+    console.error("Register error:", err);
+    return NextResponse.json(
+      { error: err.message || "Internal server error" },
+      { status: err.message?.includes("already") ? 409 : 500 }
+    );
   }
 }

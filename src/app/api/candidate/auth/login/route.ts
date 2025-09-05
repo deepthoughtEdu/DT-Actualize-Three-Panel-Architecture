@@ -2,37 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { generateToken } from "@/utils/auth";
+import { CandidateService } from "@/lib/candidateService";
 
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
-    const db = await connectDB();
+    // console.log(typeof(password));
+    
 
-    const candidate = await db.collection("candidates").findOne({ email });
-    if (!candidate) {
-      return NextResponse.json(
-        { error: "Invalid email or password" },
-        { status: 400 }
-      );
-    }
+    // ✅ reuse service instead of duplicating logic
+    const { token, candidateId } = await CandidateService.login(email, password);
 
-    const valid = await bcrypt.compare(password, candidate.password);
-    if (!valid) {
-      return NextResponse.json(
-        { error: "Invalid email or password" },
-        { status: 400 }
-      );
-    }
-
-    const token = generateToken({
-      id: candidate._id.toString(),
-      email: candidate.email,
-      role: "candidate",
-    });
-
-    return NextResponse.json({ token });
-  } catch (err) {
-    console.error("Login error:", err);
-    return NextResponse.json({ error: "Failed to login" }, { status: 500 });
+    return NextResponse.json({ token, candidateId });
+  } catch (err: any) {
+    console.error("Login error:", err.message);
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }

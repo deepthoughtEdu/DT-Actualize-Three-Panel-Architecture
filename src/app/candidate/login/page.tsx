@@ -53,9 +53,11 @@ export default function CandidateAuthPage() {
           setLoading(false);
           return;
         }
-        localStorage.setItem("candidateToken", loginData.token);
+        console.log(loginData.token.id);
+        
+        localStorage.setItem("token", loginData.token);
       } else {
-        localStorage.setItem("candidateToken", data.token);
+        localStorage.setItem("token", data.token);
       }
 
       router.push("/candidate/dashboard");
