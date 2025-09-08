@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface RoundProgress {
   roundId: string;
-  status: "pending" | "submitted";
+  status: "pending" | "in-progress" | "submitted";
 }
 
 interface Application {
@@ -16,38 +17,40 @@ interface Application {
     description: string;
   };
   status: "applied" | "in-progress" | "completed";
+  currentRoundIndex: number | null; // ✅ new field
   rounds: RoundProgress[];
 }
 
 export default function CandidateDashboard() {
+  const router = useRouter();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchApplications = async () => {
-    try {
-      const token = localStorage.getItem("token"); 
-      // console.log(`token: ${token}`);
-      // make sure you store token at login
-      const res = await fetch("/api/candidate/applications", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/candidate/applications", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (!res.ok) throw new Error("Failed to fetch applications");
-      const data = await res.json();
-      setApplications(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+        if (!res.ok) throw new Error("Failed to fetch applications");
+        const data = await res.json();
+        setApplications(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/candidate/login");
   };
-
-  fetchApplications();
-}, []);
-
 
   if (loading) {
     return (
@@ -59,12 +62,117 @@ useEffect(() => {
 
   if (applications.length === 0) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center text-center">
+      <div className="flex flex-col">
+        <div className="flex flex-row justify-end mx-4 my-5">
+          <button
+            className="bg-blue-600 text-white px-3 py-1 border rounded-xl hover:bg-blue-800"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
+
+        <div className="flex h-screen flex-col items-center justify-center text-center">
+          <h2 className="mb-2 text-2xl font-semibold text-gray-800">
+            No Applications Found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            You haven’t applied to any process yet. Explore opportunities!
+          </p>
+          <Link
+            href="/candidate/processes"
+            className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700"
+          >
+            Browse Processes
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="flex justify-between items-center">
+        <h1 className="mb-6 text-3xl font-bold text-gray-800">My Applications</h1>
+
+        <button
+          className="bg-blue-600 text-white px-3 py-1 border rounded-xl hover:bg-blue-800"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {applications.map((app) => {
+          const currentRound =
+            app.currentRoundIndex !== null
+              ? app.rounds[app.currentRoundIndex]
+              : null;
+
+          return (
+            <div
+              key={app._id}
+              className="rounded-2xl bg-white p-6 shadow-md hover:shadow-lg transition"
+            >
+              <h2 className="text-xl font-semibold text-gray-800">
+                {app.process.title}
+              </h2>
+              <p className="mb-4 text-sm text-gray-600">
+                {app.process.description}
+              </p>
+
+              <div className="mb-4">
+                <span
+                  className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${
+                    app.status === "completed"
+                      ? "bg-green-100 text-green-700"
+                      : app.status === "in-progress"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {app.status}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {app.rounds.map((round, idx) => (
+                  <div
+                    key={round.roundId}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <span className="text-gray-800">Round {idx + 1}</span>
+
+                    {round.status === "submitted" ? (
+                      <span className="text-green-600 font-medium">
+                        Submitted
+                      </span>
+                    ) : currentRound && currentRound.roundId === round.roundId ? (
+                      <Link
+                        href={`/candidate/processes/${app.process._id}/round/${round.roundId}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Continue
+                      </Link>
+                    ) : (
+                      <span className="text-gray-500">Locked</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* CTA Section */}
+      <div className="mt-10 flex flex-col items-center justify-center text-center">
         <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-          No Applications Found
+          Looking for more opportunities?
         </h2>
         <p className="text-gray-600 mb-6">
-          You haven’t applied to any process yet. Explore opportunities!
+          Browse other available processes and apply today!
         </p>
         <Link
           href="/candidate/processes"
@@ -73,82 +181,6 @@ useEffect(() => {
           Browse Processes
         </Link>
       </div>
-    );
-  }
-
-  return (
-  <div className="min-h-screen bg-gray-50 p-6">
-    <h1 className="mb-6 text-3xl font-bold text-gray-800">My Applications</h1>
-
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {applications.map((app) =>{
-        console.log(app);
-        
-        return(
-        <div
-          key={app._id}
-          className="rounded-2xl bg-white p-6 shadow-md hover:shadow-lg transition"
-        >
-          <h2 className="text-xl font-semibold text-gray-800">
-            {app.process.title}
-          </h2>
-          <p className="mb-4 text-sm text-gray-600">
-            {app.process.description}
-          </p>
-
-          <div className="mb-4">
-            <span
-              className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${
-                app.status === "completed"
-                  ? "bg-green-100 text-green-700"
-                  : app.status === "in-progress"
-                  ? "bg-yellow-100 text-yellow-700"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              {app.status}
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {app.rounds.map((round, idx) => (
-              <div
-                key={round.roundId}
-                className="flex items-center justify-between rounded-lg border p-3"
-              >
-                <span className="text-gray-800">Round {idx + 1}</span>
-                {round.status === "submitted" ? (
-                  <span className="text-green-600 font-medium">Submitted</span>
-                ) : (
-                  <Link
-                    href={`/candidate/processes/${app.process._id}/round/${round.roundId}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Continue
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )})}
     </div>
-
-    {/* CTA Section */}
-    <div className="mt-10 flex flex-col items-center justify-center text-center">
-      <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-        Looking for more opportunities?
-      </h2>
-      <p className="text-gray-600 mb-6">
-        Browse other available processes and apply today!
-      </p>
-      <Link
-        href="/candidate/processes"
-        className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700"
-      >
-        Browse Processes
-      </Link>
-    </div>
-  </div>
-);
+  );
 }

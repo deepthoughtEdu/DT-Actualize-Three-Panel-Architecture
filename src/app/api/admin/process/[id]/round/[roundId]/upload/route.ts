@@ -6,9 +6,10 @@ import { addRoundInstructionUpload } from "@/lib/processService";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string } }
+  context: { params: { id: string; roundId: string } }
 ) {
   try {
+    const { id, roundId } = await context.params;
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const type = formData.get("type") as string; // "image" | "audio"
@@ -31,7 +32,7 @@ export async function POST(
     }
 
     // save metadata inside round.uploads
-    await addRoundInstructionUpload(params.id, params.roundId, {
+    await addRoundInstructionUpload(id, roundId, {
       url: result.secure_url,
       type,
     });
