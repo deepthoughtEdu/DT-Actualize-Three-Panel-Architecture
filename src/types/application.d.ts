@@ -6,18 +6,29 @@ export interface Submission {
   answer: string;
 }
 
+export interface RoundAnswer {
+  fieldId: ObjectId;
+  answer: string;
+}
+
+export type RoundStatus = "pending" | "in-progress" | "submitted";
+
 export interface RoundProgress {
-  roundId: ObjectId;
-  answers:any;
-  status: "pending" | "submitted";
+  roundId: string;
+  answers: RoundAnswer[];
+  status: RoundStatus;
   submission?: Submission[];
 }
+
+export type ApplicationStatus = "applied" | "in-progress" | "completed";
 
 export interface Application {
   _id?: ObjectId;
   candidateId: ObjectId;
   processId: ObjectId;
-  status: "applied" | "in-progress" | "completed";
+  status: ApplicationStatus;
+  currentRoundIndex: number | null;   // NEW → tracks which round candidate resumes
+   currentRoundTitle: string | null;
   rounds: RoundProgress[];
   createdAt: Date;
 }

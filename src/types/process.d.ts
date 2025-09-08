@@ -8,7 +8,7 @@ export interface Round {
   _id: string;
   order: number;
   title: string;
-  type: "form" | "mcq" | "coding" | "instruction"; 
+  type: "form" | "instruction"; 
   fields?: Field[]; // optional, only if type=form/coding
   instruction?: string; // optional, if type=instruction
 }

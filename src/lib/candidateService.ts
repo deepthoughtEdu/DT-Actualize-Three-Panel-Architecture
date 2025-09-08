@@ -97,28 +97,43 @@ export class CandidateService {
     return process as Process;
   }
 
-  // 🔹 Apply to a process
-  static async applyToProcess(candidateId: ObjectId, processId: ObjectId) {
-    const db = await connectDB();
+// 🔹 Apply to a process
+static async applyToProcess(candidateId: ObjectId, processId: ObjectId) {
+  const db = await connectDB();
 
-    const existing = await db.collection("applications").findOne({
-      candidateId: new ObjectId(candidateId),
-      processId: new ObjectId(processId),
-    });
+  const existing = await db.collection("applications").findOne({
+    candidateId: new ObjectId(candidateId),
+    processId: new ObjectId(processId),
+  });
 
-    if (existing) throw new Error("Already applied to this process");
+  if (existing) throw new Error("Already applied to this process");
 
-    const application: Application = {
-      candidateId: new ObjectId(candidateId),
-      processId: new ObjectId(processId),
-      status: "applied",
-      createdAt: new Date(),
-      rounds: [], // will store round submissions
-    };
+  // 🔹 Fetch process definition to get its rounds
+  const process = await db.collection("processes").findOne({ _id: new ObjectId(processId) });
+  if (!process) throw new Error("Process not found");
 
-    const result = await db.collection("applications").insertOne(application);
-    return { applicationId: result.insertedId.toString() };
-  }
+  // 🔹 Map process.rounds to application.rounds with initial statuses
+  const rounds = (process.rounds || []).map((r: any, idx: number) => ({
+    roundId: r._id,
+    status: idx === 0 ? "in-progress" : "pending", // first round is active
+    answers: [],
+    submission: [],
+  }));
+
+  const application: Application = {
+    candidateId: new ObjectId(candidateId),
+    processId: new ObjectId(processId),
+    status: "applied",          // already started
+    currentRoundIndex: 0, 
+     currentRoundTitle:"",         // first round index
+    createdAt: new Date(),
+    rounds,
+  };
+
+  const result = await db.collection("applications").insertOne(application);
+
+  return { applicationId: result.insertedId.toString() };
+}
 
   // 🔹 Submit answers for a round
   static async submitRound(candidateId: string, applicationId: string, roundId: string, answers: any) {
