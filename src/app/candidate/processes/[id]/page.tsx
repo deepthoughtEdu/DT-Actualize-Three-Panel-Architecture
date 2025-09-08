@@ -18,26 +18,54 @@ interface Process {
   createdAt: string;
 }
 
+interface RoundProgress {
+  roundId: string;
+  status: "pending" | "in-progress" | "submitted";
+}
+
+interface ApplicationWithProcess {
+  _id: string;
+  status: "applied" | "in-progress" | "completed";
+  currentRoundIndex: number | null;
+  rounds: RoundProgress[];
+  process: {
+    _id: string;
+    title: string;
+    description: string;
+  };
+}
+
 export default function ProcessDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+
   const [process, setProcess] = useState<Process | null>(null);
+  const [application, setApplication] = useState<ApplicationWithProcess | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    const fetchProcess = async () => {
+    const fetchProcessAndApp = async () => {
       try {
+        // 1️⃣ Fetch process details
         const res = await fetch(`/api/candidate/processes/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to fetch process");
         const data = await res.json();
         setProcess(data);
+
+        // 2️⃣ Fetch candidate applications for this process
+        const appRes = await fetch(`/api/candidate/applications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (appRes.ok) {
+          const apps: ApplicationWithProcess[] = await appRes.json();
+          const app = apps.find((a) => a.process._id === id);
+          if (app) setApplication(app);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -45,7 +73,7 @@ export default function ProcessDetailsPage() {
       }
     };
 
-    if (id) fetchProcess();
+    if (id) fetchProcessAndApp();
   }, [id]);
 
   const handleApply = async () => {
@@ -62,21 +90,43 @@ export default function ProcessDetailsPage() {
       });
 
       if (!res.ok) throw new Error("Failed to apply");
-      const data = await res.json();
+      await res.json();
 
-      // ✅ Get the first round after applying
-      const firstRound = process?.rounds.sort((a, b) => a.order - b.order)[0];
+      // ✅ Refetch application after applying
+      const appRes = await fetch(`/api/candidate/applications`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (appRes.ok) {
+        const apps: ApplicationWithProcess[] = await appRes.json();
+        const app = apps.find((a) => a.process._id === id);
+        if (app) setApplication(app);
 
-      if (firstRound) {
-        router.push(`/candidate/processes/${id}/round/${firstRound._id}`);
-      } else {
-        router.push(`/candidate/dashboard`);
+        // ✅ If status is still 'applied', don't auto-redirect
+        if (app && app.status === "in-progress") {
+          const firstRound = process?.rounds.sort((a, b) => a.order - b.order)[0];
+          if (firstRound) {
+            router.push(`/candidate/processes/${id}/round/${firstRound._id}`);
+          }
+        }
       }
     } catch (err) {
       console.error(err);
       alert("Failed to apply. Try again.");
     } finally {
       setApplying(false);
+    }
+  };
+
+  const handleContinue = () => {
+    if (!process || !application) return;
+
+    if (application.currentRoundIndex !== null) {
+      const round = process.rounds.sort((a, b) => a.order - b.order)[
+        application.currentRoundIndex
+      ];
+      if (round) {
+        router.push(`/candidate/processes/${id}/round/${round._id}`);
+      }
     }
   };
 
@@ -107,26 +157,51 @@ export default function ProcessDetailsPage() {
       <ul className="mb-6 space-y-3">
         {process.rounds
           .sort((a, b) => a.order - b.order)
-          .map((round) => (
-            <li
-              key={round._id}
-              className="rounded-xl bg-white p-4 shadow-sm"
-            >
-              <p className="font-medium text-gray-900">
-                Round {round.order}: {round.title}
-              </p>
-              <p className="text-sm text-gray-600">{round.description}</p>
-            </li>
-          ))}
+          .map((round) => {
+            const roundStatus = application?.rounds.find(
+              (r) => r.roundId === round._id
+            )?.status;
+
+            return (
+              <li
+                key={round._id}
+                className="rounded-xl bg-white p-4 shadow-sm flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">
+                    Round {round.order}: {round.title}
+                  </p>
+                  <p className="text-sm text-gray-600">{round.description}</p>
+                </div>
+                {roundStatus === "submitted" && (
+                  <span className="text-green-600 font-medium">Submitted</span>
+                )}
+              </li>
+            );
+          })}
       </ul>
 
-      <button
-        onClick={handleApply}
-        disabled={applying}
-        className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50"
-      >
-        {applying ? "Applying..." : "Apply Now"}
-      </button>
+      {/* ✅ Conditional actions */}
+      {!application ? (
+        <button
+          onClick={handleApply}
+          disabled={applying}
+          className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50"
+        >
+          {applying ? "Applying..." : "Apply Now"}
+        </button>
+      ) 
+       : application.status === "applied" ? (
+        <button
+          onClick={handleContinue}
+          className="rounded-xl bg-yellow-500 px-6 py-3 text-white shadow-md transition hover:bg-yellow-600"
+        >
+          Continue Application
+        </button>
+      ) : application.status === "completed" ? (
+        <p className="text-green-600 font-semibold">✅ Process Completed</p>
+      ) : null}
+
     </div>
   );
 }
