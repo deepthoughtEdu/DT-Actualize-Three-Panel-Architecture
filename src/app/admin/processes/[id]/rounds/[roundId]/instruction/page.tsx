@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import TiptapEditor from "@/components/tiptap/TiptapEditor";
 
 export default function InstructionPage() {
   const { id, roundId } = useParams();
@@ -57,7 +58,7 @@ export default function InstructionPage() {
 
     if (res.ok) {
       alert("Instruction saved!");
-      router.push(`/admin/processes/${id}/rounds/${roundId}`);
+      router.push(`/admin/processes/${id}/rounds`);
     }
   };
 
@@ -150,13 +151,19 @@ export default function InstructionPage() {
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Manage Instruction</h1>
 
-      <textarea
+      {/* <textarea
         value={instruction}
         onChange={(e) => setInstruction(e.target.value)}
         placeholder="Enter instruction here..."
         className="w-full border p-3 rounded mb-4"
         rows={5}
-      />
+      /> */}
+
+       <TiptapEditor
+          editable={true}
+          content={instruction}
+          onContentUpdate={setInstruction}
+        />
 
       {/* Upload Section */}
       <div className="mb-6">

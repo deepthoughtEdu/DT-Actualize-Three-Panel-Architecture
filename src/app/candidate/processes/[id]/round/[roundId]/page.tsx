@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import TiptapEditor from "@/components/tiptap/TiptapEditor";
 import Link from "next/link";
 
 interface Field {
@@ -174,12 +175,18 @@ export default function RoundSubmissionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="mb-2 text-2xl font-bold text-gray-800">{round.title}</h1>
+      <h1 className="text-center mb-2 text-3xl font-bold text-gray-800">{round.title}</h1>
 
       {round.type === "instruction" && (
         <>
-          <p className="mb-6 text-gray-700">{round.instruction}</p>
+          <p className="flex justify-center mb-6 text-gray-700">
+            <TiptapEditor 
+              editable={false}
+              content={round.instruction}
+            />
+          </p>
 
+          {/* ✅ Show uploads if any */}
           {round.uploads && round.uploads.length > 0 && (
             <div className="flex gap-3 justify-between mb-6 space-y-4">
               {round.uploads.map((u, idx) => (
@@ -205,14 +212,14 @@ export default function RoundSubmissionPage() {
             </div>
           )}
 
-          <div className="flex flex-row gap-5">
+          <div className='flex justify-center'>
             <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50"
-            >
-              {submitting ? "Proceeding..." : "Proceed to Next Round"}
-            </button>
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50"
+          >
+            {submitting ? "Proceeding..." : "Proceed to Next Round"}
+          </button>
           </div>
         </>
       )}

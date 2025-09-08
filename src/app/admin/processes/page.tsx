@@ -140,6 +140,12 @@ export default function AdminProcessesPage() {
               >
                 Manage
               </Link>
+              <Link
+                href={`/admin/processes/applications`}
+                className="px-3 py-1 bg-green-600 rounded-lg hover:bg-blue-900 text-sm text-white"
+              >
+                Applications
+              </Link>
               <button
                   onClick={() => handleDelete(process._id)}
                   className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
