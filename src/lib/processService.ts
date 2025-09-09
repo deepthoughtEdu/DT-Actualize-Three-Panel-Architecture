@@ -60,7 +60,7 @@ export async function addRound(processId: string, round: Round) {
     .collection<Process>("processes")
     .updateOne(
       { _id: new ObjectId(processId) },
-      { $push: { rounds: { ...round, _id: new ObjectId() } } }
+      { $push: { rounds: { ...round, _id: new ObjectId().toString() } } }
     );
 }
 
@@ -105,7 +105,7 @@ export async function deleteRound(processId: string, roundId: string) {
     .collection<Process>("processes")
     .updateOne(
       { _id: new ObjectId(processId) },
-      { $pull: { rounds: { _id: new ObjectId(roundId) } } }
+      { $pull: { rounds: { _id: new ObjectId(roundId).toString() } } }
     );
 }
 
@@ -125,7 +125,7 @@ export async function addRoundInstructionUpload(
   const result = await processes.updateOne(
     {
       _id: new ObjectId(processId),
-      "rounds._id": new ObjectId(roundId),
+      "rounds._id": new ObjectId(roundId).toString(),
     },
     {
       $push: { "rounds.$.uploads": { ...file, uploadedAt: new Date() } } as any,

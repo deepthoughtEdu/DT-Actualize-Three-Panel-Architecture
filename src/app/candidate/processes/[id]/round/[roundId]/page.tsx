@@ -37,6 +37,24 @@ export default function RoundSubmissionPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
+   useEffect(() => {
+    const markInProgress = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      await fetch(`/api/candidate/applications/${id}/round/${roundId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ answers: [] }), // 🔹 empty, still marks as in-progress
+      });
+    };
+
+    markInProgress();
+  }, [id, roundId]);
+
   // ✅ Fetch process + application answers
   useEffect(() => {
     const fetchProcessAndAnswers = async () => {
@@ -119,11 +137,11 @@ export default function RoundSubmissionPage() {
       const payload =
         round?.type === "form"
           ? {
-              answers: Object.entries(answers).map(([fieldId, answer]) => ({
-                fieldId,
-                answer,
-              })),
-            }
+            answers: Object.entries(answers).map(([fieldId, answer]) => ({
+              fieldId,
+              answer,
+            })),
+          }
           : {};
 
       const res = await fetch(
@@ -143,15 +161,15 @@ export default function RoundSubmissionPage() {
       const currentIndex = rounds.findIndex((r) => r._id === roundId);
       if (currentIndex !== -1 && currentIndex < rounds.length - 1) {
         const nextRoundId = rounds[currentIndex + 1]._id;
-        alert("Round completed! Moving to next round...");
+        // alert("Round completed! Moving to next round...");
         router.push(`/candidate/processes/${id}/round/${nextRoundId}`);
       } else {
-        alert("All rounds completed! Redirecting to dashboard...");
+        // alert("All rounds completed! Redirecting to dashboard...");
         router.push(`/candidate/dashboard`);
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to submit round. Try again.");
+      // alert("Failed to submit round. Try again.");
     } finally {
       setSubmitting(false);
     }
@@ -180,7 +198,7 @@ export default function RoundSubmissionPage() {
       {round.type === "instruction" && (
         <>
           <p className="flex justify-center mb-6 text-gray-700">
-            <TiptapEditor 
+            <TiptapEditor
               editable={false}
               content={round.instruction}
             />
@@ -188,38 +206,47 @@ export default function RoundSubmissionPage() {
 
           {/* ✅ Show uploads if any */}
           {round.uploads && round.uploads.length > 0 && (
-            <div className="flex gap-3 justify-between mb-6 space-y-4">
+            <div className="flex gap-3 justify-center mb-6 space-y-4">
               {round.uploads.map((u, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl flex border border-gray-200 p-3 bg-white shadow-sm"
+                  className="rounded-xl flex border border-gray-200 p-3 bg-white shadow-sm "
                 >
                   {u.type === "image" && (
                     <img
                       src={u.url}
                       alt="Instruction upload"
-                      className="max-w-sm rounded-lg h-[300px]"
+                      className="max-w-sm rounded-lg h-[200px]"
                     />
                   )}
                   {u.type === "audio" && (
-                    <audio controls className="w-full h-[300px]">
-                      <source src={u.url} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
+                    <>
+                      {console.log("Audio URL:", u.url)}
+                      <audio controls className="flex flex-row my-10 ">
+                        <source src={u.url} type="audio/mp3" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </>
                   )}
                 </div>
               ))}
             </div>
           )}
 
-          <div className='flex justify-center'>
+          <div className='flex justify-center gap-4'>
             <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50"
-          >
-            {submitting ? "Proceeding..." : "Proceed to Next Round"}
-          </button>
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50"
+            >
+              {submitting ? "Proceeding..." : "Proceed to Next Round"}
+            </button>
+
+            <Link href="/candidate/dashboard">
+              <button className="rounded-xl bg-blue-600 px-6 py-3 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50">
+                Return to dashboard
+              </button>
+            </Link>
           </div>
         </>
       )}
