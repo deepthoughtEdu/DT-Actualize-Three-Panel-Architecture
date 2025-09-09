@@ -32,7 +32,7 @@ export async function PUT(req: NextRequest) {
       );
     } else {
       // ✅ Create new round
-      const newRoundId = new ObjectId();
+      const newRoundId = new ObjectId().toString();
       const newRound = {
         _id: newRoundId,
         order: process.rounds.length + 1, // auto-increment order

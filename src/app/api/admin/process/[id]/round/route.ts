@@ -118,7 +118,7 @@ export async function POST(
     }
 
     // ✅ Construct the new round properly
-    const newRoundId = new ObjectId();
+    const newRoundId = new ObjectId().toString();
     let newRound: Round;
 
     if (type === "form") {

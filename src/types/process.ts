@@ -37,7 +37,7 @@ interface Uploads {
 export type RoundType = "form" | "instruction";
 
 export interface BaseRound {
-  _id: ObjectId;
+  _id: string;
   order: number;
   title: string;
   type: RoundType;
