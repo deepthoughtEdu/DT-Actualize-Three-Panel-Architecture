@@ -125,7 +125,7 @@ static async applyToProcess(candidateId: ObjectId, processId: ObjectId) {
     processId: new ObjectId(processId),
     status: "applied",          // already started
     currentRoundIndex: 0, 
-     currentRoundTitle:"",         // first round index
+     currentRoundTitle:process.rounds[0].title,         // first round index
     createdAt: new Date(),
     rounds,
   };

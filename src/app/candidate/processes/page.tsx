@@ -3,17 +3,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface Process {
-  _id: string;
-  title: string;
+import { Process as BackendProcess } from "@/types/process";
+import { HeroSection } from "@/components/candidate/Role-Gallery/HeroSection";
+import { ProcessGrid } from "@/components/candidate/Role-Gallery/ProcessGrid";
+
+interface UIProcess {
+  id: string;
+  name: string;
   description: string;
-  status: "draft" | "published";
-  createdAt: string;
+  createdDate: string;
 }
 
 export default function CandidateProcessesPage() {
   const router = useRouter();
-  const [processes, setProcesses] = useState<Process[]>([]);
+  const [processes, setProcesses] = useState<UIProcess[]>([]);
+  const [filteredProcesses, setFilteredProcesses] = useState<UIProcess[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,8 +25,17 @@ export default function CandidateProcessesPage() {
       try {
         const res = await fetch("/api/candidate/processes");
         if (!res.ok) throw new Error("Failed to fetch processes");
-        const data = await res.json();
-        setProcesses(data);
+        const data: BackendProcess[] = await res.json();
+
+        const mapped = data.map((process) => ({
+          id: process._id?.toString() || "",
+          name: process.title,
+          description: process.description || "",
+          createdDate: new Date(process.createdAt).toLocaleDateString(),
+        }));
+
+        setProcesses(mapped);
+        setFilteredProcesses(mapped);
       } catch (err) {
         console.error(err);
       } finally {
@@ -33,6 +46,25 @@ export default function CandidateProcessesPage() {
     fetchProcesses();
   }, []);
 
+  const handleSearch = (query: string) => {
+    if (!query.trim()) {
+      setFilteredProcesses(processes);
+      return;
+    }
+    const lowerQuery = query.toLowerCase();
+    setFilteredProcesses(
+      processes.filter(
+        (process) =>
+          process.name.toLowerCase().includes(lowerQuery) ||
+          process.description.toLowerCase().includes(lowerQuery)
+      )
+    );
+  };
+
+  const handleProcessClick = (process: UIProcess) => {
+    router.push(`/candidate/processes/${process.id}`);
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -42,36 +74,9 @@ export default function CandidateProcessesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="mb-6 text-3xl font-bold text-gray-800">
-        Available Processes
-      </h1>
-
-      {processes.length === 0 ? (
-        <p className="text-gray-500">No processes available right now.</p>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {processes.map((process) => (
-            <div
-              key={process._id}
-              className="cursor-pointer rounded-2xl bg-white p-6 shadow-md transition hover:shadow-lg"
-              onClick={() =>
-                router.push(`/candidate/processes/${process._id}`)
-              }
-            >
-              <h2 className="mb-2 text-xl font-semibold text-gray-900">
-                {process.title}
-              </h2>
-              <p className="mb-4 text-sm text-gray-600 line-clamp-3">
-                {process.description}
-              </p>
-              <p className="text-xs text-gray-400">
-                Created on {new Date(process.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+    <div>
+      <HeroSection onSearch={handleSearch} />
+      <ProcessGrid processes={filteredProcesses} onProcessClick={handleProcessClick} />
     </div>
   );
 }

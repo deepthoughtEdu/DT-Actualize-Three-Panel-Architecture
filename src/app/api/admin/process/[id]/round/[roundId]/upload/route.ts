@@ -37,6 +37,8 @@ export async function POST(
       type,
     });
 
+    // console.log(result.secure_url);
+    
     return NextResponse.json({ url: result.secure_url });
   } catch (err) {
     console.error(err);
