@@ -122,50 +122,62 @@ export default function ApplicantsPage() {
 
             {/* Table card */}
             <main className="mx-auto mt-10 w-full max-w-6xl px-6 pb-20">
-                <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-                    {/* Table header */}
-                    <div
-                        className="px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white"
-                        style={{ backgroundColor: PURPLE }}
-                    >
-                        <div className="grid grid-cols-12 items-center">
-                            <div className="col-span-4 pl-2">Name</div>
-                            <div className="col-span-3 text-center">Status</div>
-                            <div className="col-span-3 text-center">Round</div>
-                            <div className="col-span-2 text-right pr-2">Actions</div>
-                        </div>
-                    </div>
+  <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-left text-sm">
+        <thead className="bg-slate-50 text-slate-600">
+          <tr className="[&>th]:px-4 [&>th]:py-3">
+            <th className="w-[40%]">Name</th>
+            <th className="text-center w-[20%]">Status</th>
+            <th className="text-center w-[20%]">Round</th>
+            <th className="text-right w-[20%] pr-2">Actions</th>
+          </tr>
+        </thead>
 
-                    {/* Rows */}
-                    <ul className="divide-y divide-gray-200 bg-white">
-                        {applicants.map((a: any) => (
-                            <li key={a.id} className="px-4 py-5">
-                                <div className="grid grid-cols-12 items-center">
-                                    {/* Name */}
-                                    <div className="col-span-4 pl-2">
-                                        <p className="text-sm font-medium text-gray-800">{a.name}</p>
-                                    </div>
+        <tbody className="divide-y divide-slate-100">
+          {applicants.length === 0 ? (
+            <tr>
+              <td
+                colSpan={4}
+                className="px-4 py-6 text-center text-slate-500"
+              >
+                No applicants found.
+              </td>
+            </tr>
+          ) : (
+            applicants.map((a: any) => (
+              <tr
+                key={a.id}
+                className="hover:bg-slate-50/60 transition-colors"
+              >
+                {/* Name */}
+                <td className="px-4 py-3">
+                  <p className="text-sm font-medium text-slate-900">{a.name}</p>
+                </td>
 
-                                    {/* Status */}
-                                    <div className="col-span-3 text-center">
-                                        <StatusBadge status={a.status} />
-                                    </div>
+                {/* Status */}
+                <td className="px-4 py-3 text-center">
+                  <StatusBadge status={a.status} />
+                </td>
 
-                                    {/* Round */}
-                                    <div className="col-span-3 text-center">
-                                        <p className="text-sm text-gray-600">{a.round}</p>
-                                    </div>
+                {/* Round */}
+                <td className="px-4 py-3 text-center">
+                  <p className="text-sm text-slate-600">{a.round || '-'}</p>
+                </td>
 
-                                    {/* Actions */}
-                                    <div className="col-span-2 flex justify-end pr-2">
-                                        <ViewButton />
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </main>
+                {/* Actions */}
+                <td className="px-4 py-3 text-right">
+                  <ViewButton />
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
         </div>
     );
 }

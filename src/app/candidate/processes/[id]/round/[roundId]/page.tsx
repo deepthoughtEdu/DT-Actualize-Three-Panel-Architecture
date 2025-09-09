@@ -197,12 +197,12 @@ export default function RoundSubmissionPage() {
 
       {round.type === "instruction" && (
         <>
-          <p className="flex justify-center mb-6 text-gray-700">
-            <TiptapEditor
+          <div className="flex justify-center mb-6 text-gray-700">
+            <TiptapEditor 
               editable={false}
               content={round.instruction}
             />
-          </p>
+          </div>
 
           {/* ✅ Show uploads if any */}
           {round.uploads && round.uploads.length > 0 && (
