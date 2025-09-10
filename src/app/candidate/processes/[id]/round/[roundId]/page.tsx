@@ -229,7 +229,7 @@ export default function RoundSubmissionPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8"
+              className="w-fit max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8"
             >
               <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
                 {round.title}
@@ -364,9 +364,9 @@ export default function RoundSubmissionPage() {
                   ))}
                 </div>
 
-                {saving && (
+                {/* {saving && (
                   <p className="text-sm text-gray-500">Saving draft...</p>
-                )}
+                )} */}
 
                 <div className="flex justify-between gap-4 mt-8">
                   <button

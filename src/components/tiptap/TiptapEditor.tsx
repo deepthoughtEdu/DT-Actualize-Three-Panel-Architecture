@@ -38,7 +38,7 @@ const TiptapEditor = ({editable = true, content, onContentUpdate} :TiptapEditorP
     editable,
     editorProps: {
       attributes: {
-        class: "min-h-[50vh] border focus:outline-none border-slate-300 rounded-md md:w-[85vh] max-h-[83vh] overflow-x-auto scrollbar-thin py-10 px-10 bg-slate-50 font-sans",
+        class: "min-h-[50vh] border focus:outline-none border-slate-300 rounded-md md:w-[100vh] max-h-[83vh] overflow-x-auto scrollbar-thin py-10 px-10 bg-slate-50 font-sans",
       }
     },
     onUpdate: ({ editor }) => {
