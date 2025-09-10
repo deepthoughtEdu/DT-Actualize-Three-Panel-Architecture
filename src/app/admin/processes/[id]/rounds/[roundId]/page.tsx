@@ -121,7 +121,7 @@ export default function RoundDetailsPage() {
 
       {/* Instructions */}
       {round.instruction && (
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className=" flex flex-col gap-4 mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-sm pb-2 font-semibold text-slate-800">Instructions</h2>
           <TiptapEditor
             editable={false}
@@ -129,7 +129,7 @@ export default function RoundDetailsPage() {
           />
 
           {/* Uploads */}
-          {Array.isArray(round.uploads) && round.uploads.length > 0 && (
+          {/* {Array.isArray(round.uploads) && round.uploads.length > 0 && (
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {round.uploads.map((u, idx) => (
                 <div
@@ -153,7 +153,31 @@ export default function RoundDetailsPage() {
                 </div>
               ))}
             </div>
-          )}
+          )} */}
+          {round.uploads && round.uploads.length > 0 && (
+                <div className="space-y-4 mb-6 w-fit min-w-md mx-[200px]">
+                  {round.uploads.map((u, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
+                    >
+                      {u.type === "image" && (
+                        <img
+                          src={u.url}
+                          alt="Instruction upload"
+                          className="max-w-sm rounded-lg h-[200px] mx-auto"
+                        />
+                      )}
+                      {u.type === "audio" && (
+                        <audio controls className="w-full mt-2">
+                          <source src={u.url} type="audio/mp3" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
         </div>
       )}
 
