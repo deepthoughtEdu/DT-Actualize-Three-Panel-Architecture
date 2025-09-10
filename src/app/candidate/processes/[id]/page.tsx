@@ -102,17 +102,27 @@ const RecruitmentScreen = () => {
       if (appRes.ok) {
         const apps: ApplicationWithProcess[] = await appRes.json();
         const app = apps.find((a) => a.process._id === id);
+        // if (app) {
+        //   setApplication(app);
+        //   if (app.status === "in-progress") {
+        //     const firstRound = process?.rounds.sort((a, b) => a.order - b.order)[0];
+        //     if (firstRound) {
+        //       router.push(`/candidate/processes/${id}/round/${firstRound._id}`);
+        //     }
+        //   }
+
+        // }
         if (app) {
           setApplication(app);
-          if (app.status === "in-progress") {
-            const firstRound = process?.rounds.sort((a, b) => a.order - b.order)[0];
-            if (firstRound) {
-              router.push(`/candidate/processes/${id}/round/${firstRound._id}`);
-            }
+
+          // 🔹 Redirect always, regardless of status
+          const firstRound = process?.rounds.sort((a, b) => a.order - b.order)[0];
+          if (firstRound) {
+            router.push(`/candidate/processes/${id}/round/${firstRound._id}`);
           }
-          
         }
       }
+
     } catch (err) {
       console.error(err);
       alert("Failed to apply. Try again.");
@@ -328,7 +338,7 @@ const RecruitmentScreen = () => {
             </Button>
           </motion.div>
         )}
-        {hasApplied && application?.status === "applied" && (
+        {((hasApplied && application?.status === "applied")||(hasApplied &&application?.status === "in-progress")) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -44,6 +44,8 @@ export default function InstructionPage() {
         const data = await res.json();
         setInstruction(data.instruction ?? "");
         setUploads(data.uploads ?? []);
+        console.log(data.uploads);
+        
       } catch (e: any) {
         setErrorMsg(e?.message || "Failed to load instruction");
       } finally {
@@ -137,10 +139,36 @@ export default function InstructionPage() {
     }
   }
 
-  function removeUpload(url: string) {
-    setUploads((prev) => prev.filter((u) => u.url !== url));
-  }
+async function removeUpload(url: string) {
+  try {
+          const token = localStorage.getItem("token");
 
+    const apiUrl = `/api/admin/process/${id}/round/${roundId}/upload?url=${encodeURIComponent(url)}`;
+
+    const response = await fetch(apiUrl, {
+      method: "DELETE",
+      headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Failed to delete upload:", data.error);
+      return;
+    }
+
+    console.log(data.message);
+
+    // If successful, remove from local state
+    setUploads((prev) => prev.filter((u) => u.url !== url));
+
+  } catch (error) {
+    console.error("Error deleting upload:", error);
+  }
+}
   // Recording
   async function startRecording() {
     try {

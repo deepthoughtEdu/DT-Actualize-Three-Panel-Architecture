@@ -117,12 +117,12 @@ export async function GET(
       .collection("processes")
       .findOne({ _id: new ObjectId(id) });
 
-    if (!process) return NextResponse.json({ error: "Process not found" }, { status: 404 });
+    if (!process)
+      return NextResponse.json({ error: "Process not found" }, { status: 404 });
 
-    const round = process.rounds.find(
-      (r: any) => r._id === roundId
-    );
-    if (!round) return NextResponse.json({ error: "Round not found" }, { status: 404 });
+    const round = process.rounds.find((r: any) => r._id.toString() === roundId);
+    if (!round)
+      return NextResponse.json({ error: "Round not found" }, { status: 404 });
 
     if (round.type !== "instruction") {
       return NextResponse.json(
@@ -131,10 +131,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ instruction: round.instruction || "" });
+    return NextResponse.json({
+      instruction: round.instruction || "",
+      uploads: (round.uploads || []).map(({ url, type }: any) => ({ url, type }))
+    });
+
   } catch (err) {
     console.error("Error fetching instruction", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
-

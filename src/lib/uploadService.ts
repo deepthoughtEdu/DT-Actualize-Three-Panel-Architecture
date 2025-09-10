@@ -1,5 +1,7 @@
 import cloudinary from "./cloudinary";
 import { UploadApiResponse } from "cloudinary";
+import { connectDB } from "./db";
+import { ObjectId } from "mongodb";
 
 export async function uploadImage(filePath: string): Promise<UploadApiResponse> {
   return cloudinary.uploader.upload(filePath, {
@@ -15,3 +17,9 @@ export async function uploadAudio(filePath: string): Promise<UploadApiResponse> 
     format: "mp3",
   });
 }
+
+export async function deleteFile(publicId: string): Promise<UploadApiResponse>{
+  return cloudinary.uploader.destroy(publicId);
+}
+
+
