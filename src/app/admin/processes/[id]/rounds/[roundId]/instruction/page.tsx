@@ -207,7 +207,7 @@ export default function InstructionPage() {
       )}
 
       {/* Editor card */}
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl w-fit border border-slate-200 bg-white p-4 shadow-sm">
         <TiptapEditor editable={true} content={instruction} onContentUpdate={setInstruction} />
       </div>
 
