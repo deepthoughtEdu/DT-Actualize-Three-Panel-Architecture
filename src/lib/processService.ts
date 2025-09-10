@@ -134,3 +134,30 @@ export async function addRoundInstructionUpload(
 
   return result.modifiedCount > 0;
 }
+
+export async function deleteRoundInstructionUpload(
+  processId: string,
+  roundId: string,
+  fileUrl: string
+) {
+  const db = await connectDB();
+  const collection = db.collection("processes"); // Replace with your actual collection name
+
+  const result = await collection.updateOne(
+    { _id: new ObjectId(processId) },
+    {
+      $pull: {
+        "rounds.$[round].uploads": { url: fileUrl }
+      } as any
+    },
+    {
+      arrayFilters: [{ "round._id": new ObjectId(roundId).toString() }]
+    }
+  );
+
+  if (result.modifiedCount === 0) {
+    throw new Error("Upload not found or already deleted");
+  }
+
+  return true;
+}
