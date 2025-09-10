@@ -1,10 +1,12 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import TiptapEditor from "@/components/tiptap/TiptapEditor";
+
 
 interface Field {
   _id: string;
@@ -12,10 +14,12 @@ interface Field {
   subType: "shortText" | "longText" | "number";
 }
 
+
 interface Upload {
   url: string;
   type: "image" | "audio";
 }
+
 
 interface Round {
   _id: string;
@@ -27,9 +31,11 @@ interface Round {
   uploads?: Upload[];
 }
 
+
 export default function RoundSubmissionPage() {
   const { id, roundId } = useParams<{ id: string; roundId: string }>();
   const router = useRouter();
+
 
   const [rounds, setRounds] = useState<Round[]>([]);
   const [round, setRound] = useState<Round | null>(null);
@@ -38,11 +44,13 @@ export default function RoundSubmissionPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
+
   // ✅ Mark round in-progress
   useEffect(() => {
     const markInProgress = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
+
 
       await fetch(`/api/candidate/applications/${id}/round/${roundId}`, {
         method: "PATCH",
@@ -54,14 +62,17 @@ export default function RoundSubmissionPage() {
       });
     };
 
+
     markInProgress();
   }, [id, roundId]);
+
 
   // ✅ Fetch process + application answers
   useEffect(() => {
     const fetchProcessAndAnswers = async () => {
       try {
         const token = localStorage.getItem("token");
+
 
         // fetch process
         const res = await fetch(`/api/candidate/processes/${id}`, {
@@ -70,13 +81,16 @@ export default function RoundSubmissionPage() {
         if (!res.ok) throw new Error("Failed to fetch process");
         const process = await res.json();
 
+
         const sortedRounds = [...process.rounds].sort(
           (a: Round, b: Round) => Number(a.order) - Number(b.order)
         );
         setRounds(sortedRounds);
 
+
         const selected = sortedRounds.find((r) => r._id === roundId);
         setRound(selected || null);
+
 
         // fetch application answers
         const appRes = await fetch(`/api/candidate/applications`, {
@@ -105,12 +119,15 @@ export default function RoundSubmissionPage() {
       }
     };
 
+
     if (id && roundId) fetchProcessAndAnswers();
   }, [id, roundId]);
+
 
   // ✅ Autosave handler
   const handleChange = async (fieldId: string, value: string) => {
     setAnswers((prev) => ({ ...prev, [fieldId]: value }));
+
 
     try {
       setSaving(true);
@@ -132,6 +149,7 @@ export default function RoundSubmissionPage() {
     }
   };
 
+
   // ✅ Full round submit
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -146,6 +164,7 @@ export default function RoundSubmissionPage() {
             }
           : {};
 
+
       const res = await fetch(
         `/api/candidate/applications/${id}/round/${roundId}`,
         {
@@ -158,7 +177,9 @@ export default function RoundSubmissionPage() {
         }
       );
 
+
       if (!res.ok) throw new Error("Submission failed");
+
 
       const currentIndex = rounds.findIndex((r) => r._id === roundId);
       if (currentIndex !== -1 && currentIndex < rounds.length - 1) {
@@ -174,6 +195,7 @@ export default function RoundSubmissionPage() {
     }
   };
 
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -181,6 +203,7 @@ export default function RoundSubmissionPage() {
       </div>
     );
   }
+
 
   if (!round) {
     return (
@@ -190,7 +213,9 @@ export default function RoundSubmissionPage() {
     );
   }
 
+
   const currentRoundIndex = rounds.findIndex((r) => r._id === roundId) + 1;
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-500 to-blue-900">
@@ -215,6 +240,7 @@ export default function RoundSubmissionPage() {
           </p>
         </motion.div>
 
+
         {/* Main card */}
         <motion.main
           initial={{ opacity: 0 }}
@@ -238,11 +264,13 @@ export default function RoundSubmissionPage() {
                 Please review the following instructions before proceeding.
               </p>
 
+
               {round.instruction && (
                 <div className="mb-6">
                   <TiptapEditor editable={false} content={round.instruction} />
                 </div>
               )}
+
 
               {round.uploads && round.uploads.length > 0 && (
                 <div className="space-y-4 mb-6">
@@ -269,6 +297,7 @@ export default function RoundSubmissionPage() {
                 </div>
               )}
 
+
               <div className="flex justify-between gap-4 mt-8">
                 <button
                   onClick={() => router.push("/candidate/dashboard")}
@@ -278,6 +307,7 @@ export default function RoundSubmissionPage() {
                   <ArrowLeft className="w-4 h-4" />
                   Return to Dashboard
                 </button>
+
 
                 <button
                   onClick={handleSubmit}
@@ -290,6 +320,7 @@ export default function RoundSubmissionPage() {
               </div>
             </motion.div>
           )}
+
 
           {/* ✅ Form Round */}
           {round.type === "form" && (
@@ -315,6 +346,7 @@ export default function RoundSubmissionPage() {
                     Please fill out the form below.
                   </p>
                 </div>
+
 
                 <div className="space-y-6">
                   {round.fields?.map((field, index) => (
@@ -364,9 +396,11 @@ export default function RoundSubmissionPage() {
                   ))}
                 </div>
 
+
                 {/* {saving && (
                   <p className="text-sm text-gray-500">Saving draft...</p>
                 )} */}
+
 
                 <div className="flex justify-between gap-4 mt-8">
                   <button
@@ -378,6 +412,7 @@ export default function RoundSubmissionPage() {
                     <ArrowLeft className="w-4 h-4" />
                     Return to Dashboard
                   </button>
+
 
                   <button
                     type="submit"
@@ -396,3 +431,6 @@ export default function RoundSubmissionPage() {
     </div>
   );
 }
+
+
+
