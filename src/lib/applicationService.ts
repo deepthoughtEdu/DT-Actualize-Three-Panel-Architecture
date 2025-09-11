@@ -6,8 +6,6 @@ import type { Application } from "@/types/application";
 export async function getApplicationsByProcessId(processId: string) {
   const db = await connectDB();
 
- 
-
   const applications = await db
     .collection("applications")
     .aggregate([
