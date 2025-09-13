@@ -60,7 +60,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string } }
+  context: { params: { id: string; roundId: string } }
 ) {
   try {
     // 🔹 Auth check
@@ -73,7 +73,7 @@ export async function POST(
     if (!decoded?.id)
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
-    const { id: processId, roundId } = params;
+    const { id: processId, roundId } = await context.params;
     const newField = await req.json();
 
     const db = await connectDB();
@@ -83,7 +83,7 @@ export async function POST(
 
     // 🔹 Push the new field into the correct round
     const result = await db.collection("processes").updateOne(
-      { _id: new ObjectId(processId), "rounds._id": new ObjectId(roundId) },
+      { _id: new ObjectId(processId), "rounds._id": new ObjectId(roundId).toString() },
       { $push: { "rounds.$.fields": field } }
     );
 
