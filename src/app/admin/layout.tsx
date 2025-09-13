@@ -50,7 +50,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Top bar */}
-            <Header />
             <div className="mx-auto grid grid-cols-1 md:grid-cols-[260px_1fr] gap-0">
                 {/* Sidebar */}
                 <aside
