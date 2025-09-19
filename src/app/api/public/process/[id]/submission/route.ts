@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import { verifyToken } from "@/utils/auth";
 import { connectDB } from "@/lib/db";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: any) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {

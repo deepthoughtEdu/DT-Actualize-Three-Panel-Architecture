@@ -2,7 +2,6 @@
 
 import './styles.scss';
 import { useEditor, EditorContent } from '@tiptap/react'
-import { useEffect } from 'react';
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline';
 import TextAlign from "@tiptap/extension-text-align";
@@ -49,9 +48,9 @@ const TiptapEditor = ({editable = true, content, onContentUpdate} :TiptapEditorP
   })
 
   //dynamically change editor content (for testing only)
-  useEffect(() => {
-    if(editor && content && (!editable)) { editor.commands.setContent(content) }
-  }, [content, editor])
+  // useEffect(() => {
+  //   if(editor && content && (!editable)) { editor.commands.setContent(content) }
+  // }, [content, editor])
 
   if(!editor) return null;
 

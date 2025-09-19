@@ -276,7 +276,7 @@ const RecruitmentScreen = () => {
               <Trophy className="w-10 h-10 text-green-600" />
               <h2 className="text-2xl font-bold text-green-700">Process Completed!</h2>
             </div>
-            <p className="text-green-600">Congratulations! You've successfully completed all rounds.</p>
+            <p className="text-green-600">Congratulations! You{"'"}ve successfully completed all rounds.</p>
           </motion.div>
         )}
 

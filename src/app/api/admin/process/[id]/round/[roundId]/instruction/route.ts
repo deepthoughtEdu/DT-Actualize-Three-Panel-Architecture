@@ -6,7 +6,7 @@ import { verifyToken } from "@/utils/auth";
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string; roundId: string } }
+  context: any
 ) {
   const{id, roundId}=await context.params;
   try {
@@ -60,7 +60,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string; roundId: string } }
+  context: any
 ) {
   const {id, roundId}= await context.params;
   try {
@@ -108,7 +108,7 @@ export async function DELETE(
 
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string; roundId: string } }
+  context: any
 ) {
   const { id, roundId } = await context.params;
   try {

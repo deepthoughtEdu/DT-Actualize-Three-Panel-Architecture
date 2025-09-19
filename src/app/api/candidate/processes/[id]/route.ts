@@ -5,7 +5,7 @@ import { connectDB } from "@/lib/db";
 
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  context: any
 ) {
   try {
     const { id } = await context.params; // ✅ await params

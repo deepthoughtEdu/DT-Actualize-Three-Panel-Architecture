@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import Image from "next/image";
 import TiptapEditor from "@/components/tiptap/TiptapEditor";
 
 
@@ -44,7 +45,8 @@ export default function RoundSubmissionPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-
+  console.log(saving);
+  
   // ✅ Mark round in-progress
   useEffect(() => {
     const markInProgress = async () => {
@@ -280,7 +282,7 @@ export default function RoundSubmissionPage() {
                       className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
                     >
                       {u.type === "image" && (
-                        <img
+                        <Image
                           src={u.url}
                           alt="Instruction upload"
                           className="max-w-sm rounded-lg h-[200px] mx-auto"

@@ -5,7 +5,7 @@ import { connectDB } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string } }
+  { params }: any
 ) {
   try {
     // 🔹 Auth check
@@ -60,7 +60,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string; roundId: string } }
+  context: any
 ) {
   try {
     // 🔹 Auth check

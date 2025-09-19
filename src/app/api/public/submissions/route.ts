@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; order: string } }
+  { params }: any
 ) {
   const { id, order } = params;
 

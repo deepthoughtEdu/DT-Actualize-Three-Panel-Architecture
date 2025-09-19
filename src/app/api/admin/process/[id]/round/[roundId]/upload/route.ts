@@ -6,7 +6,7 @@ import { deleteFile, uploadAudio, uploadImage } from "@/lib/uploadService";
 
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string; roundId: string } }
+  context: any
 ) {
   try {
     const { id, roundId } = await context.params;
@@ -48,7 +48,7 @@ export async function POST(
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string; roundId: string } }
+  context: any
 ) {
   try {
     const { id, roundId } = context.params;

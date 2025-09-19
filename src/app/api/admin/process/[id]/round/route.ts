@@ -76,7 +76,7 @@ import { Round } from "@/types";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: any }
 ) {
   try {
     // ✅ Authorization header

@@ -4,11 +4,10 @@ import { Application } from "@/types/application";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "@/utils/auth";
 import { Process } from "@/types";
-import { error } from "console";
 
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ id: string; roundId: string }> }
+  context: any
 ) {
   try {
     const params = await context.params;
@@ -200,7 +199,7 @@ export async function POST(
  */
 export async function PATCH(
   req: NextRequest,
-  context: { params: Promise<{ id: string; roundId: string }> }
+  context: any
 ) {
   try {
     const params = await context.params;

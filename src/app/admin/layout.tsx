@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Header from "@/components/ui/Header";
 import { useState } from "react";
 
 const nav = [
