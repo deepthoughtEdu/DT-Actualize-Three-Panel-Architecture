@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
-import bcrypt from "bcryptjs";
-import { generateToken } from "@/utils/auth";
 import { CandidateService } from "@/lib/candidateService";
 
 export async function POST(req: NextRequest) {

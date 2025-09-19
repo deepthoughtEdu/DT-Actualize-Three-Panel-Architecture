@@ -6,7 +6,7 @@ import { getProcessById } from "@/lib/processService"; // Assuming you have a se
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { applicationId: string } }
+    { params }: any
 ) {
     try {
         const authHeader = req.headers.get("Authorization");

@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Open_Sans } from "next/font/google";
+import Image from "next/image";
 import TiptapEditor from "@/components/tiptap/TiptapEditor";
 
 const openSans = Open_Sans({ subsets: ["latin"] });
@@ -39,13 +40,13 @@ function IconEdit(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-function IconArrowLeft(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2Z" />
-    </svg>
-  );
-}
+// function IconArrowLeft(props: React.SVGProps<SVGSVGElement>) {
+//   return (
+//     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+//       <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2Z" />
+//     </svg>
+//   );
+// }
 function IconPlus(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
@@ -137,7 +138,7 @@ export default function RoundDetailsPage() {
                   className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50"
                 >
                   {u.type === "image" ? (
-                    <img
+                    <Image
                       src={u.url}
                       alt="instruction upload"
                       className="h-64 w-full bg-white object-contain"
@@ -162,7 +163,7 @@ export default function RoundDetailsPage() {
                       className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
                     >
                       {u.type === "image" && (
-                        <img
+                        <Image
                           src={u.url}
                           alt="Instruction upload"
                           className="max-w-sm rounded-lg h-[200px] mx-auto"

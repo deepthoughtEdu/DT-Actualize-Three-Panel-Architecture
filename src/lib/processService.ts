@@ -24,7 +24,7 @@ export async function getProcessesByAdmin(adminId: string) {
   const db = await connectDB();
   return db
     .collection<Process>("processes")
-    .find({ adminId: new ObjectId(adminId) })
+    .find()
     .toArray();
 }
 

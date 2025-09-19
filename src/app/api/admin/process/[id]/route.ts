@@ -4,7 +4,7 @@ import { deleteProcess, getProcessById, updateProcess } from "@/lib/processServi
 import { verifyToken } from "@/utils/auth";
 import { getAdminById } from "@/lib/adminService";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: any) {
   try {
     const { id } = params;
     const process = await getProcessById(id);
@@ -13,11 +13,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
     return NextResponse.json(process);
   } catch (err) {
+    console.error(err);
     return NextResponse.json({ error: "Failed to fetch process" }, { status: 500 });
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: any) {
   try {
     const { id } = params;
     const updates = await req.json();
@@ -25,11 +26,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     await updateProcess(id, updates);
     return NextResponse.json({ message: "Process updated successfully" });
   } catch (err) {
+    console.error(err);
     return NextResponse.json({ error: "Failed to update process" }, { status: 500 });
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: any) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
@@ -72,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: any) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {

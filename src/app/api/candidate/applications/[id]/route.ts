@@ -4,7 +4,7 @@ import { Application } from "@/types/application";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "@/utils/auth";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: any) {
   try {
     const authHeader = req.headers.get("authorization");
     if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

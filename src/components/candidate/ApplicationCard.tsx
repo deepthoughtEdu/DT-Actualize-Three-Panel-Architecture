@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Eye, CheckCircle, Clock, PlayCircle, PauseCircle } from "lucide-react";
+import { CheckCircle, Clock, PlayCircle, PauseCircle } from "lucide-react";
 
 export interface ApplicationData {
   id: string;

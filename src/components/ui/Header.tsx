@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 type HeaderProps = {
   children?: React.ReactNode;
@@ -9,8 +10,10 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
     <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-white shadow-sm">
   {/* Logo */}
   <div className="flex items-center">
-    <img
+    <Image
       src="/logo.svg"
+      height={100}
+      width={100}
       alt="DeepThought Logo"
       className="h-8 w-auto object-contain"
     />

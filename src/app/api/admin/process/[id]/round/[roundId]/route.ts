@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  deleteProcess,
-  deleteRound,
+  // deleteProcess,
+  // deleteRound,
   getProcessById,
-  updateProcess,
+  // updateProcess,
   updateRound,
 } from "@/lib/processService";
 import { verifyToken } from "@/utils/auth";
@@ -12,7 +12,7 @@ import { ObjectId } from "mongodb";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string } }
+  { params }: any
 ) {
   try {
     const { id: processId, roundId } = params;
@@ -39,7 +39,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string } }
+  { params }: any
 ) {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -84,7 +84,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string } }
+  { params }: any
 ) {
   try {
     // 🔹 Auth check

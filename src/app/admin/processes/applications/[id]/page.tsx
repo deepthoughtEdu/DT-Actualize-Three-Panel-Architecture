@@ -74,7 +74,7 @@ export default function ApplicantsPage() {
     }
 
     fetchData();
-  }, []);
+  }, [id]);
 
 
   if (loading) return <div>Loading Applicants...</div>

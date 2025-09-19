@@ -1,5 +1,4 @@
 import jwt, { SignOptions } from "jsonwebtoken";
-import { ObjectId } from "mongodb";
 
 const JWT_SECRET: string = process.env.JWT_SECRET || "changeme";
 

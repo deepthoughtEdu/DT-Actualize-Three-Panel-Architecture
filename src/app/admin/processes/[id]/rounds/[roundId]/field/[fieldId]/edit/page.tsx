@@ -11,7 +11,7 @@ export default function EditFieldPage() {
     fetch(`/api/admin/process/${id}/round/${roundId}/field/${fieldId}`)
       .then((res) => res.json())
       .then((data) => setField(data));
-  }, [fieldId]);
+  }, [id, roundId, fieldId]);
 
   const handleUpdate = async () => {
     const token = localStorage.getItem("token"); // retrieve token from localStorage
