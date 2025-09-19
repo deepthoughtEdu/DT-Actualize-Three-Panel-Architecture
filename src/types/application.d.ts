@@ -1,5 +1,4 @@
 import { ObjectId } from "mongodb";
-import { Round } from "./process";
 
 export interface Submission {
   fieldId: string;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getProcessById } from "@/lib/processService";
 import { verifyToken } from "@/utils/auth";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: any) {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
@@ -27,6 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       type: r.type,
       fields: r.fields.map((f: any) => {
         const { correctAnswer, ...rest } = f; // remove correctAnswer
+        console.log(correctAnswer)
         return rest;
       }),
     }));

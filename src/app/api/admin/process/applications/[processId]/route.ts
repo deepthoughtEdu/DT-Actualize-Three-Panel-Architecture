@@ -5,7 +5,7 @@ import { getApplicationsByProcessId } from "@/lib/applicationService";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { processId: string } }
+  { params }: any
 ) {
   try {
     const authHeader = req.headers.get("Authorization");

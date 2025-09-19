@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createProcess, getAllProcesses, getProcessesByAdmin } from "@/lib/processService";
+import { 
+  createProcess, 
+  //getAllProcesses, 
+  getProcessesByAdmin 
+} from "@/lib/processService";
 import { verifyToken } from "@/utils/auth";
 import { getAdminById } from "@/lib/adminService";
 
@@ -88,7 +92,7 @@ export async function GET(req: NextRequest) {
     }
 
     // ✅ Fetch ALL processes
-    const processes = await getAllProcesses();
+    const processes = await getProcessesByAdmin(admin._id.toString());
     return NextResponse.json(processes);
 
   } catch (err) {

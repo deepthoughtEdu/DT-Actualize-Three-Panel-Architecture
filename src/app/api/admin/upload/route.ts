@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/utils/auth"; // your JWT utility
-import { ObjectId } from "mongodb";
 import { uploadAudio, uploadImage } from "@/lib/uploadService";
 import { writeFile } from "fs/promises";
 import path from "path";

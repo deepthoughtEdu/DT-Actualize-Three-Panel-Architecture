@@ -19,14 +19,6 @@ interface Process {
   rounds: Round[];
 }
 
-// --- Tiny inline icons (no deps) ---
-function IconSettings(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M12 8a4 4 0 1 0 .001 8.001A4 4 0 0 0 12 8m8.94 3-1.66-.96.12-1.93-1.89-.73-.73-1.89-1.93.12L12 3.06 10.86 4.6l-1.93-.12-.73 1.89-1.89.73.12 1.93L3.06 11 4.6 12.14l-.12 1.93 1.89.73.73 1.89 1.93-.12L12 20.94l1.14-1.54 1.93.12.73-1.89 1.89-.73-.12-1.93L20.94 12Z"/>
-    </svg>
-  );
-}
 function IconPublish(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>

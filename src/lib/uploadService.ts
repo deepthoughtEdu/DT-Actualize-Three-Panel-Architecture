@@ -1,7 +1,5 @@
 import cloudinary from "./cloudinary";
 import { UploadApiResponse } from "cloudinary";
-import { connectDB } from "./db";
-import { ObjectId } from "mongodb";
 
 export async function uploadImage(filePath: string): Promise<UploadApiResponse> {
   return cloudinary.uploader.upload(filePath, {

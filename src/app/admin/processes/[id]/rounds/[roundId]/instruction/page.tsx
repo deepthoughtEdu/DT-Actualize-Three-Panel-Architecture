@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import TiptapEditor from "@/components/tiptap/TiptapEditor";
 import { Open_Sans } from "next/font/google";
+import Image from "next/image";
 
 const openSans = Open_Sans({ subsets: ["latin"] });
 
@@ -141,7 +142,6 @@ export default function InstructionPage() {
 
 async function removeUpload(url: string) {
   try {
-          const token = localStorage.getItem("token");
 
     const apiUrl = `/api/admin/process/${id}/round/${roundId}/upload?url=${encodeURIComponent(url)}`;
 
@@ -282,7 +282,7 @@ async function removeUpload(url: string) {
             {uploads.map((u, i) => (
               <div key={`${u.url}-${i}`} className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
                 {u.type === "image" ? (
-                  <img src={u.url} alt="upload" className="h-64 w-full bg-white object-contain" />
+                  <Image src={u.url} alt="upload" className="h-64 w-full bg-white object-contain" />
                 ) : (
                   <div className="p-3">
                     <audio controls className="w-full">

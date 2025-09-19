@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string; fieldId: string } }
+  { params }: any
 ) {
   try {
     const { id: processId, roundId, fieldId } = params;
@@ -31,7 +31,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string; fieldId: string } }
+  { params }: any
 ) {
   try {
     const authHeader = req.headers.get("Authorization");
@@ -75,7 +75,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string; roundId: string; fieldId: string } }
+  { params }: any
 ) {
   try {
     const authHeader = req.headers.get("Authorization");

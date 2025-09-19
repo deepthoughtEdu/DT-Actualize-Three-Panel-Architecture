@@ -5,7 +5,7 @@ import { verifyToken } from "@/utils/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { processId: string; roundId: string } }
+  { params }: any
 ) {
   try {
     const authHeader = req.headers.get("Authorization");

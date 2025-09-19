@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { Application } from "@/types/application";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "@/utils/auth";
 import { CandidateService } from "@/lib/candidateService";

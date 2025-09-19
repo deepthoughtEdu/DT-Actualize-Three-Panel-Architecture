@@ -5,7 +5,6 @@ import type { Candidate } from "@/types/candidate";
 import type { Process } from "@/types/process";
 import type { Application } from "@/types/application";
 import { generateToken } from "@/utils/auth";
-import { log } from "console";
 import { verifyPassword } from "@/utils/hash";
 
 export class CandidateService {

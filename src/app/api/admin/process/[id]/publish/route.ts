@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateProcess } from "@/lib/processService";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: any) {
   try {
     const { id } = params;
 
@@ -11,6 +11,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // const publicLink = `/apply/${id}`;
     return NextResponse.json({ message: "Process published" });
   } catch (err) {
+    console.error(err);
     return NextResponse.json({ error: "Failed to publish process" }, { status: 500 });
   }
 }
