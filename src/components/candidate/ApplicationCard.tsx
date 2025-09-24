@@ -55,7 +55,7 @@ export const ApplicationCard = ({ application }: ApplicationCardProps) => {
       transition={{ duration: 0.2, ease: "easeOut" }}
       className="h-full"
     >
-      <Card className="h-full bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-300 border-border/50">
+      <Card className="h-full bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-300 border-[2px]">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <Badge variant={statusInfo.variant} className="mb-2">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/utils/auth"; // your JWT utility
-import { uploadAudio, uploadImage } from "@/lib/uploadService";
+import { uploadAudio, uploadImage, uploadFile, deleteFile } from "@/lib/uploadService";
 import { writeFile } from "fs/promises";
 import path from "path";
 
@@ -33,9 +33,15 @@ export async function POST(req: NextRequest) {
     let result;
     if (type === "audio") {
       result = await uploadAudio(tempPath);
-    } else {
+    } else if (type === "image") {
       result = await uploadImage(tempPath);
+    } else {
+      // generic file upload (pdf, docx, zip, etc.)
+      result = await uploadFile(tempPath)
+      return NextResponse.json({ url: result.url });
     }
+
+    console.log(result.secure_url);
 
     return NextResponse.json({ url: result.secure_url });
   } catch (err) {

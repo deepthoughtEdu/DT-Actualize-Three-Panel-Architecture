@@ -22,35 +22,35 @@ interface Process {
 function IconPublish(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M12 2l4 4h-3v6h-2V6H8l4-4m-7 9h14v9H5v-9Z"/>
+      <path fill="currentColor" d="M12 2l4 4h-3v6h-2V6H8l4-4m-7 9h14v9H5v-9Z" />
     </svg>
   );
 }
 function IconEye(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"/>
+      <path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
     </svg>
   );
 }
 function IconEdit(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M5 18.08V21h2.92L18.84 10.08l-2.92-2.92L5 18.08M20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.76 3.76 1.83-1.83Z"/>
+      <path fill="currentColor" d="M5 18.08V21h2.92L18.84 10.08l-2.92-2.92L5 18.08M20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.76 3.76 1.83-1.83Z" />
     </svg>
   );
 }
 function IconFields(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M3 5h18v2H3V5m0 6h18v2H3v-2m0 6h18v2H3v-2Z"/>
+      <path fill="currentColor" d="M3 5h18v2H3V5m0 6h18v2H3v-2m0 6h18v2H3v-2Z" />
     </svg>
   );
 }
 function IconInstruction(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M13 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7V3m-1 5v6h2V8h-2Zm0 8v2h2v-2h-2Z"/>
+      <path fill="currentColor" d="M13 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7V3m-1 5v6h2V8h-2Zm0 8v2h2v-2h-2Z" />
     </svg>
   );
 }
@@ -195,12 +195,22 @@ export default function ProcessDetailsPage() {
         </div>
       </div>
 
+      <div className="mt-4">
+        {isPublished && (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            ⚠️ This process is <span className="font-medium">published</span>. You cannot add, edit or delete rounds.
+          </p>
+        )}
+      </div>
+
+
       {/* Rounds table + actions inline */}
       <div className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         {/* Table header with Create */}
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-800">Rounds</h2>
           <button
+            disabled={isPublished}
             onClick={handleCreate}
             className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
           >
@@ -239,15 +249,16 @@ export default function ProcessDetailsPage() {
                       <td className="px-4 py-3 text-slate-700">{round.type}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap items-center justify-end gap-2">
-                          <button
+                          {/* <button
                             onClick={() => handleView(round._id)}
                             className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                             title="View"
                           >
                             <IconEye className="h-4 w-4" />
                             View
-                          </button>
+                          </button> */}
                           <button
+                            disabled={isPublished}
                             onClick={() => handleEdit(round._id)}
                             className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-2.5 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
                             title="Edit"
@@ -256,10 +267,10 @@ export default function ProcessDetailsPage() {
                             Edit
                           </button>
                           <button
+                            disabled={isPublished}
                             onClick={() => handleManage(round._id, round.type)}
-                            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-white hover:opacity-95 ${
-                              round.type === "instruction" ? "bg-amber-600" : "bg-indigo-600"
-                            }`}
+                            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-white hover:opacity-95 ${round.type === "instruction" ? "bg-amber-600" : "bg-indigo-600"
+                              }`}
                             title={round.type === "instruction" ? "Instruction" : "Fields"}
                           >
                             {round.type === "instruction" ? (
@@ -275,6 +286,7 @@ export default function ProcessDetailsPage() {
                             )}
                           </button>
                           <button
+                            disabled={isPublished}
                             onClick={() => handleDelete(round._id)}
                             className="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1.5 text-sm font-medium text-white hover:bg-rose-700"
                             title="Delete"

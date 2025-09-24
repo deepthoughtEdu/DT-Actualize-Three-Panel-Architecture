@@ -133,6 +133,7 @@ export default function CreateFieldPage() {
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="shortText">Short Text</option>
+              <option value="fileUpload">File Upload</option>
               {/* <option value="longText">Long Text</option>
               <option value="singleChoice">Single Choice</option>
               <option value="multipleChoice">Multiple Choice</option>
