@@ -26,7 +26,7 @@ export default function FileUploader({ type }: { type: "image" | "audio" }) {
       <input type="file" onChange={handleUpload} accept={type === "image" ? "image/*" : "audio/*"} />
       {url && (
         type === "image" ? (
-          <Image src={url} alt="Uploaded" className="mt-2 w-48" />
+          <img src={url} alt="Uploaded" className="mt-2 w-48" />
         ) : (
           <audio controls className="mt-2">
             <source src={url} type="audio/mpeg" />

@@ -282,7 +282,7 @@ async function removeUpload(url: string) {
             {uploads.map((u, i) => (
               <div key={`${u.url}-${i}`} className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
                 {u.type === "image" ? (
-                  <Image src={u.url} alt="upload" className="h-64 w-full bg-white object-contain" />
+                  <Image src={u.url} width={100} height={100} alt="upload" className="h-64 w-full bg-white object-contain" />
                 ) : (
                   <div className="p-3">
                     <audio controls className="w-full">

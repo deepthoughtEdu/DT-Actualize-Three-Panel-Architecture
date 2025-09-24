@@ -63,6 +63,7 @@ export async function GET(
                     const answer = round.answers.find((a: any) => a.fieldId.toString() === field._id.toString());
                     return {
                         questionText: field.question,
+                        fieldType: field.subType,
                         answer: answer ? answer.answer : null,
                     };
                 });

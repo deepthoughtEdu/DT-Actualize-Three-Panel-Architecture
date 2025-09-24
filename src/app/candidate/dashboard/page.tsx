@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ApplicationCard, ApplicationData } from "@/components/candidate/ApplicationCard";
 import { DashboardHeader } from "@/components/candidate/DashboardHeader";
@@ -25,7 +24,6 @@ interface Application {
 }
 
 export default function CandidateDashboard() {
-  const router = useRouter();
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -87,11 +85,6 @@ export default function CandidateDashboard() {
     fetchApplications();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/candidate/login");
-  };
-
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -116,7 +109,7 @@ export default function CandidateDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader onLogout={handleLogout} />
+      <DashboardHeader />
 
       <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

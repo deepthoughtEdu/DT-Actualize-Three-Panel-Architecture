@@ -5,14 +5,13 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import Image from "next/image";
 import TiptapEditor from "@/components/tiptap/TiptapEditor";
 
 
 interface Field {
   _id: string;
   question: string;
-  subType: "shortText" | "longText" | "number";
+  subType: "shortText" | "fileUpload" | "number";
 }
 
 
@@ -46,7 +45,7 @@ export default function RoundSubmissionPage() {
   const [saving, setSaving] = useState(false);
 
   console.log(saving);
-  
+
   // ✅ Mark round in-progress
   useEffect(() => {
     const markInProgress = async () => {
@@ -159,11 +158,11 @@ export default function RoundSubmissionPage() {
       const payload =
         round?.type === "form"
           ? {
-              answers: Object.entries(answers).map(([fieldId, answer]) => ({
-                fieldId,
-                answer,
-              })),
-            }
+            answers: Object.entries(answers).map(([fieldId, answer]) => ({
+              fieldId,
+              answer,
+            })),
+          }
           : {};
 
 
@@ -282,7 +281,7 @@ export default function RoundSubmissionPage() {
                       className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
                     >
                       {u.type === "image" && (
-                        <Image
+                        <img
                           src={u.url}
                           alt="Instruction upload"
                           className="max-w-sm rounded-lg h-[200px] mx-auto"
@@ -350,7 +349,7 @@ export default function RoundSubmissionPage() {
                 </div>
 
 
-                <div className="space-y-6">
+                <div className="space-y-6 h-[510px] overflow-x">
                   {round.fields?.map((field, index) => (
                     <motion.div
                       key={field._id}
@@ -369,31 +368,92 @@ export default function RoundSubmissionPage() {
                         {field.question}
                         <span className="text-red-500 ml-1">*</span>
                       </label>
-                      {field.subType === "longText" ? (
-                        <textarea
-                          id={field._id}
-                          value={answers[field._id] || ""}
-                          onChange={(e) =>
-                            handleChange(field._id, e.target.value)
-                          }
-                          rows={4}
-                          className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          required
-                        />
+                      {field.subType === "fileUpload" ? (
+                        <div className="space-y-2">
+                          {!answers[field._id] ? (
+                            <>
+                              <input
+                                type="file"
+                                id={field._id}
+                                required
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+
+                                  const formData = new FormData();
+                                  formData.append("file", file);
+                                  formData.append("type", "file");
+
+                                  try {
+                                    setSaving(true);
+                                    const token = localStorage.getItem("token");
+                                    const res = await fetch("/api/admin/upload", {
+                                      method: "POST",
+                                      headers: {
+                                        Authorization: `Bearer ${token}`,
+                                      },
+                                      body: formData,
+                                    });
+
+                                    if (!res.ok) throw new Error("Upload failed");
+                                    const data = await res.json();
+
+                                    // save the uploaded file URL as the answer
+                                    handleChange(field._id, data.url);
+                                  } catch (err) {
+                                    console.error("File upload failed:", err);
+                                  }
+                                  setSaving(false);;
+                                }}
+                                className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </>
+                          ) : (
+                            <div className="flex items-center justify-between border p-3 rounded-lg">
+                              <a
+                                href={answers[field._id]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                View Uploaded File
+                              </a>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    const token = localStorage.getItem("token");
+                                    // const res = await fetch(`/api/admin/process/${id}/round/${roundId}/upload?url=${encodeURIComponent(answers[field._id])}`, {
+                                    //   method: "DELETE",
+                                    //   headers: {
+                                    //     Authorization: `Bearer ${token}`,
+                                    //   },
+                                    // });
+
+                                    // if (!res.ok) throw new Error("Delete failed");
+                                    handleChange(field._id, ""); // clear answer
+                                  } catch (err) {
+                                    console.error("Delete failed:", err);
+                                  }
+                                }}
+                                className="text-red-600 hover:underline"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <input
-                          type={
-                            field.subType === "number" ? "number" : "text"
-                          }
+                          type={field.subType === "number" ? "number" : "text"}
                           id={field._id}
                           value={answers[field._id] || ""}
-                          onChange={(e) =>
-                            handleChange(field._id, e.target.value)
-                          }
+                          onChange={(e) => handleChange(field._id, e.target.value)}
                           className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           required
                         />
                       )}
+
                     </motion.div>
                   ))}
                 </div>
@@ -418,10 +478,10 @@ export default function RoundSubmissionPage() {
 
                   <button
                     type="submit"
-                    disabled={submitting}
+                    disabled={saving}
                     className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md hover:scale-105 transition disabled:opacity-50"
                   >
-                    {submitting ? "Submitting..." : "Submit & Continue"}
+                    {saving ? "Saving..." : "Submit & Continue"}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

@@ -65,6 +65,39 @@ export default function RoundDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  async function handleDeleteField(fieldId: string) {
+
+    try {
+      const token = localStorage.getItem("token"); // or wherever you store your token
+      const res = await fetch(
+        `/api/admin/process/${processId}/round/${roundId}/field/${fieldId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to delete field");
+      }
+
+      // Remove the field from local state
+      setRound((prev) =>
+        prev
+          ? {
+            ...prev,
+            fields: prev.fields?.filter((f) => f._id !== fieldId),
+          }
+          : prev
+      );
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }
+
   // Fetch round data
   useEffect(() => {
     async function fetchRound() {
@@ -108,15 +141,6 @@ export default function RoundDetailsPage() {
               <p className="mt-2 text-[0.95rem] leading-relaxed text-slate-700">{round.description}</p>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => router.push(`/admin/processes/${processId}/rounds/${roundId}/edit`)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              <IconEdit className="h-4 w-4" />
-              Edit Round
-            </button>
-          </div>
         </div>
       </div>
 
@@ -156,29 +180,29 @@ export default function RoundDetailsPage() {
             </div>
           )} */}
           {round.uploads && round.uploads.length > 0 && (
-                <div className="space-y-4 mb-6 w-fit min-w-md mx-[200px]">
-                  {round.uploads.map((u, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
-                    >
-                      {u.type === "image" && (
-                        <Image
-                          src={u.url}
-                          alt="Instruction upload"
-                          className="max-w-sm rounded-lg h-[200px] mx-auto"
-                        />
-                      )}
-                      {u.type === "audio" && (
-                        <audio controls className="w-full mt-2">
-                          <source src={u.url} type="audio/mp3" />
-                          Your browser does not support the audio element.
-                        </audio>
-                      )}
-                    </div>
-                  ))}
+            <div className="space-y-4 mb-6 w-fit min-w-md mx-[200px]">
+              {round.uploads.map((u, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
+                >
+                  {u.type === "image" && (
+                    <img
+                      src={u.url}
+                      alt="Instruction upload"
+                      className="max-w-sm rounded-lg h-[200px] mx-auto"
+                    />
+                  )}
+                  {u.type === "audio" && (
+                    <audio controls className="w-full mt-2">
+                      <source src={u.url} type="audio/mp3" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  )}
                 </div>
-              )}
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -214,8 +238,9 @@ export default function RoundDetailsPage() {
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-600">
                 <tr className="[&>th]:px-4 [&>th]:py-3">
-                  <th className="w-[55%]">Field Title</th>
-                  <th className="w-[20%]">Type</th>
+                  <th className="w-[50%]">Field Title</th>
+                  <th className="w-[25%]">Type</th>
+                  <th className="w-[25%]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -232,6 +257,14 @@ export default function RoundDetailsPage() {
                         <div className="font-medium text-slate-900">{field.question}</div>
                       </td>
                       <td className="px-4 py-3 text-slate-700">{field.subType}</td>
+                      <td className=''>
+                        <button
+                          onClick={() => handleDeleteField(field._id)}
+                          className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}

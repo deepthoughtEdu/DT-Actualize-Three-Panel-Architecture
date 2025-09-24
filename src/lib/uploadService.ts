@@ -8,6 +8,18 @@ export async function uploadImage(filePath: string): Promise<UploadApiResponse> 
   });
 }
 
+export async function uploadFile(
+  filePath: string,
+): Promise<UploadApiResponse> {
+  return cloudinary.uploader.upload(filePath, {
+    folder: "myapp/files",
+    use_filename: true,
+    unique_filename: false,
+    access_mode: 'public',
+    resource_type: "raw"
+  });
+}
+
 export async function uploadAudio(filePath: string): Promise<UploadApiResponse> {
   return cloudinary.uploader.upload(filePath, {
     folder: "myapp/audio",
