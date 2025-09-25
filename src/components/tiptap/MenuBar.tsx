@@ -1,7 +1,8 @@
 import {
     Bold, Italic, Strikethrough, Underline,
     Heading1, Heading2, Heading3, 
-    AlignLeft, AlignCenter, AlignRight, List, ListOrdered
+    AlignLeft, AlignCenter, AlignRight, List, ListOrdered,
+    Link as LinkIcon
 } from 'lucide-react';
 import { Toggle } from "@/components/ui/toggle";
 import { Editor } from '@tiptap/react';
@@ -9,6 +10,17 @@ import './styles.scss';
 
 export default function MenuBar({ editor }: { editor: Editor }) {
     if (!editor) return null;
+
+    const addLink = () => {
+        const url = window.prompt('Enter URL'); // simple prompt for demo
+        if (url) {
+            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+        }
+    };
+
+    const removeLink = () => {
+        editor.chain().focus().unsetLink().run();
+    };
 
     const formatOptions = [
         {
@@ -70,6 +82,18 @@ export default function MenuBar({ editor }: { editor: Editor }) {
             icon: <ListOrdered />,
             onClick: () => editor.chain().focus().toggleOrderedList().run(),
             preesed: editor.isActive("orderedList"),
+        },
+        {
+            icon: <LinkIcon />,
+            onClick: () => {
+                // If link is active, remove it; otherwise, prompt to add
+                if (editor.isActive('link')) {
+                    removeLink();
+                } else {
+                    addLink();
+                }
+            },
+            pressed: editor.isActive('link'),
         },
     ];
 

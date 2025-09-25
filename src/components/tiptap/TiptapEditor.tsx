@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline';
 import TextAlign from "@tiptap/extension-text-align";
+import Link from '@tiptap/extension-link';
 import { TableKit } from "@tiptap/extension-table";
 import MenuBar from './MenuBar'
 
@@ -30,6 +31,9 @@ const TiptapEditor = ({editable = true, content, onContentUpdate} :TiptapEditorP
       Underline,
       TextAlign.configure({
         types: ["heading", "paragraph"]
+      }),
+      Link.configure({
+        openOnClick: true,
       })
     ], 
     content,

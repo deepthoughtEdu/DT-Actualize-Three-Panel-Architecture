@@ -304,7 +304,7 @@ const RecruitmentScreen = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-lg mb-2">
-                        Round {round.id}: {round.title}
+                        {round.title}
                       </h3>
                       <p className="text-gray-500 text-sm">{round.description}</p>
                     </div>
