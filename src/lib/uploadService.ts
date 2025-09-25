@@ -1,7 +1,7 @@
 import cloudinary from "./cloudinary";
 import { UploadApiResponse } from "cloudinary";
 
-export async function uploadImage(filePath: string): Promise<UploadApiResponse> {
+export async function uploadImage(filePath: any): Promise<UploadApiResponse> {
   return cloudinary.uploader.upload(filePath, {
     folder: "myapp/images",
     resource_type: "image",
@@ -9,7 +9,7 @@ export async function uploadImage(filePath: string): Promise<UploadApiResponse> 
 }
 
 export async function uploadFile(
-  filePath: string,
+  filePath: any,
 ): Promise<UploadApiResponse> {
   return cloudinary.uploader.upload(filePath, {
     folder: "myapp/files",
@@ -20,7 +20,7 @@ export async function uploadFile(
   });
 }
 
-export async function uploadAudio(filePath: string): Promise<UploadApiResponse> {
+export async function uploadAudio(filePath: any): Promise<UploadApiResponse> {
   return cloudinary.uploader.upload(filePath, {
     folder: "myapp/audio",
     resource_type: "video", // Cloudinary treats audio as video
