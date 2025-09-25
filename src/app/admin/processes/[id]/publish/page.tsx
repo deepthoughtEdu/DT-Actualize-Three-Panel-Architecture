@@ -80,8 +80,8 @@ export default function PublishProcessPage() {
     const hasAtLeastOneRound = rounds.length > 0;
     const orderedAscending = rounds.length
       ? rounds.slice().every((r, i, arr) =>
-          i === 0 ? r.order >= 1 : r.order >= 1 && r.order >= arr[i - 1].order
-        )
+        i === 0 ? r.order >= 1 : r.order >= 1 && r.order >= arr[i - 1].order
+      )
       : true;
     const roundsHaveTitles = rounds.every((r) => r.title && r.title.trim().length >= 2);
 
@@ -246,18 +246,10 @@ export default function PublishProcessPage() {
         </div>
 
         {/* Warning before publishing */}
-<div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-  ⚠️ Once you publish this process, it will become <span className="font-medium">read-only</span>.
-  You won’t be able to make edits afterwards.
-</div>
-
-{/* Publish button */}
-<button
-  onClick={handlePublish}
-  className="mt-4 w-full rounded-md bg-blue-600 py-2 text-white hover:bg-blue-700"
->
-  Publish Process
-</button>
+        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          ⚠️ Once you publish this process, it will become <span className="font-medium">read-only</span>.
+          You won’t be able to make edits afterwards.
+        </div>
 
 
         {/* Actions */}

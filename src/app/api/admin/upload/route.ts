@@ -1,22 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/utils/auth"; // your JWT utility
-import { uploadAudio, uploadImage, uploadFile, deleteFile } from "@/lib/uploadService";
+import { uploadAudio, uploadImage, uploadFile } from "@/lib/uploadService";
 import { writeFile } from "fs/promises";
 import path from "path";
 
 export async function POST(req: NextRequest) {
   try {
-    // 🔑 Extract JWT token
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const token = authHeader.split(" ")[1];
-    const decoded = verifyToken(token);
-    if (!decoded?.id) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const type = formData.get("type") as string; // "image" | "audio"

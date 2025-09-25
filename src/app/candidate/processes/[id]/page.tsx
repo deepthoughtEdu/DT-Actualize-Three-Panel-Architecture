@@ -99,6 +99,7 @@ const RecruitmentScreen = () => {
       const appRes = await fetch(`/api/candidate/applications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (appRes.ok) {
         const apps: ApplicationWithProcess[] = await appRes.json();
         const app = apps.find((a) => a.process._id === id);
