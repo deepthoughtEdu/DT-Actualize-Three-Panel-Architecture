@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import path from "path";
 import { addRoundInstructionUpload, deleteRoundInstructionUpload } from "@/lib/processService";
 import { deleteFile, uploadAudio, uploadImage } from "@/lib/uploadService";
 
@@ -20,15 +18,13 @@ export async function POST(
 
     // save temp file
     const buffer = Buffer.from(await file.arrayBuffer());
-    const tempPath = path.join("/tmp", file.name);
-    await writeFile(tempPath, buffer);
 
     // upload to Cloudinary
     let result;
     if (type === "audio") {
-      result = await uploadAudio(tempPath);
+      result = await uploadAudio(buffer);
     } else {
-      result = await uploadImage(tempPath);
+      result = await uploadImage(buffer);
     }
 
     // save metadata inside round.uploads
@@ -38,7 +34,7 @@ export async function POST(
     });
 
     // console.log(result.secure_url);
-    
+
     return NextResponse.json({ url: result.secure_url });
   } catch (err) {
     console.error(err);

@@ -54,7 +54,7 @@ export default function CandidateDashboard() {
                 // If this is the current round, mark it as "continue"
                 roundStatus =
                   app.currentRoundIndex !== null &&
-                  app.currentRoundIndex === idx
+                    app.currentRoundIndex === idx
                     ? "continue"
                     : "in-progress";
               } else if (round.status === "pending") {

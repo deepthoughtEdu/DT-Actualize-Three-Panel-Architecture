@@ -26,13 +26,13 @@ function IconPublish(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-function IconEye(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
-    </svg>
-  );
-}
+// function IconEye(props: React.SVGProps<SVGSVGElement>) {
+//   return (
+//     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+//       <path fill="currentColor" d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
+//     </svg>
+//   );
+// }
 function IconEdit(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
@@ -103,9 +103,9 @@ export default function ProcessDetailsPage() {
   }, [id]);
 
   // --- Round Actions (lifted from your RoundsPage) ---
-  const handleView = (roundId: string) => {
-    router.push(`/admin/processes/${id}/rounds/${roundId}`);
-  };
+  // const handleView = (roundId: string) => {
+  //   router.push(`/admin/processes/${id}/rounds/${roundId}`);
+  // };
 
   const handleEdit = (roundId: string) => {
     router.push(`/admin/processes/${id}/rounds/${roundId}/edit`);

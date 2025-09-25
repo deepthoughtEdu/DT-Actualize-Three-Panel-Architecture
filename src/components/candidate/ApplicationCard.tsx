@@ -96,15 +96,14 @@ export const ApplicationCard = ({ application }: ApplicationCardProps) => {
                     >
                       <div className="flex items-center space-x-2">
                         <Icon
-                          className={`w-4 h-4 ${
-                            round.status === "completed" ||
-                            round.status === "submitted"
+                          className={`w-4 h-4 ${round.status === "completed" ||
+                              round.status === "submitted"
                               ? "text-completed"
                               : round.status === "in-progress" ||
                                 round.status === "continue"
-                              ? "text-in-progress"
-                              : "text-muted-foreground"
-                          }`}
+                                ? "text-in-progress"
+                                : "text-muted-foreground"
+                            }`}
                         />
                         <span className="text-sm text-foreground">
                           {round.name}

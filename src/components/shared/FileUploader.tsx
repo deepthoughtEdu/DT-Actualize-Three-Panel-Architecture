@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import axios from "axios";
-import Image from "next/image";
 
 export default function FileUploader({ type }: { type: "image" | "audio" }) {
   const [url, setUrl] = useState<string | null>(null);

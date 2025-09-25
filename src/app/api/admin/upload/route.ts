@@ -1,15 +1,13 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { uploadAudio, uploadImage, uploadFile } from "@/lib/uploadService";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { uploadFile } from "@/lib/uploadService";
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
-    const type = formData.get("type") as string; // "image" | "audio"
+    // const type = formData.get("type") as string; // "image" | "audio"
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -17,29 +15,26 @@ export async function POST(req: NextRequest) {
 
     // Save temp file
     const buffer = Buffer.from(await file.arrayBuffer());
-    const tempPath = path.join("/tmp", file.name);
-    await writeFile(tempPath, buffer);
 
-    let result;
-    if (type === "audio") {
-      result = await uploadAudio(tempPath);
-    } else if (type === "image") {
-      result = await uploadImage(tempPath);
-    } else {
-      // generic file upload (pdf, docx, zip, etc.)
-      result = await uploadFile(tempPath)
-      return NextResponse.json({ url: result.url });
-    }
+    const result = await uploadFile(buffer);
 
-    console.log(result.secure_url);
+    // if (type === "audio") {
+    //   result = await uploadAudio(buffer);
+    // } else if (type === "image") {
+    //   result = await uploadImage(buffer);
+    // } else {
+    //   // generic file upload (pdf, docx, zip, etc.)
+    //   result = await uploadFile(buffer)
+    // }
+
+    console.log("Upload result:", result.secure_url);
 
     return NextResponse.json({ url: result.secure_url });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  } catch (err: any) {
+    console.error("Upload failed:", err);
+    return NextResponse.json({ error: err.message || "Upload failed" }, { status: 500 });
   }
 }
-
 // export async function GET(req: NextRequest) {
 //   try {
 //     // 🔑 Extract JWT token

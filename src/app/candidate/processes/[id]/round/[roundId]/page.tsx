@@ -422,7 +422,7 @@ export default function RoundSubmissionPage() {
                                 type="button"
                                 onClick={async () => {
                                   try {
-                                    const token = localStorage.getItem("token");
+                                    // const token = localStorage.getItem("token");
                                     // const res = await fetch(`/api/admin/process/${id}/round/${roundId}/upload?url=${encodeURIComponent(answers[field._id])}`, {
                                     //   method: "DELETE",
                                     //   headers: {
