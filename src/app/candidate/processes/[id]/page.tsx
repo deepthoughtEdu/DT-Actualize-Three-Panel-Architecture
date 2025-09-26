@@ -339,7 +339,7 @@ const RecruitmentScreen = () => {
             </Button>
           </motion.div>
         )}
-        {((hasApplied && application?.status === "applied")||(hasApplied &&application?.status === "in-progress")) && (
+        {((hasApplied && application?.status === "applied") || (hasApplied && application?.status === "in-progress")) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

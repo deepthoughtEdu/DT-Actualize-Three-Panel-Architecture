@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Open_Sans } from "next/font/google";
-import Image from "next/image";
 import TiptapEditor from "@/components/tiptap/TiptapEditor";
 
 const openSans = Open_Sans({ subsets: ["latin"] });
@@ -33,13 +32,13 @@ interface Round {
 }
 
 // tiny inline icons (no libs)
-function IconEdit(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M5 18.08V21h2.92L18.84 10.08l-2.92-2.92L5 18.08M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.76 3.76 1.82-1.84Z" />
-    </svg>
-  );
-}
+// function IconEdit(props: React.SVGProps<SVGSVGElement>) {
+//   return (
+//     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+//       <path fill="currentColor" d="M5 18.08V21h2.92L18.84 10.08l-2.92-2.92L5 18.08M20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.76 3.76 1.82-1.84Z" />
+//     </svg>
+//   );
+// }
 // function IconArrowLeft(props: React.SVGProps<SVGSVGElement>) {
 //   return (
 //     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>

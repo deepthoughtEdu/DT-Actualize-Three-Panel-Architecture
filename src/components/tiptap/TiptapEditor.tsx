@@ -6,6 +6,8 @@ import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline';
 import TextAlign from "@tiptap/extension-text-align";
 import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import Audio from './extensions/audio.js';
 import { TableKit } from "@tiptap/extension-table";
 import MenuBar from './MenuBar'
 
@@ -15,16 +17,16 @@ interface TiptapEditorProps {
   onContentUpdate?: (content: any) => void
 }
 
-const TiptapEditor = ({editable = true, content, onContentUpdate} :TiptapEditorProps ) => {
+const TiptapEditor = ({ editable = true, content, onContentUpdate }: TiptapEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        bulletList:{
+        bulletList: {
           HTMLAttributes: {
             class: "list-disc ml-3 black"
           }
         }
-      }), 
+      }),
       TableKit.configure({
         table: { resizable: true }
       }),
@@ -34,8 +36,10 @@ const TiptapEditor = ({editable = true, content, onContentUpdate} :TiptapEditorP
       }),
       Link.configure({
         openOnClick: true,
-      })
-    ], 
+      }),
+      Image,
+      Audio
+    ],
     content,
     immediatelyRender: false,
     editable,
@@ -45,9 +49,9 @@ const TiptapEditor = ({editable = true, content, onContentUpdate} :TiptapEditorP
       }
     },
     onUpdate: ({ editor }) => {
-        if(!onContentUpdate) return;
-        const contentJson : any = editor.getJSON();
-        onContentUpdate(contentJson);
+      if (!onContentUpdate) return;
+      const contentJson: any = editor.getJSON();
+      onContentUpdate(contentJson);
     }
   })
 
@@ -56,10 +60,10 @@ const TiptapEditor = ({editable = true, content, onContentUpdate} :TiptapEditorP
   //   if(editor && content && (!editable)) { editor.commands.setContent(content) }
   // }, [content, editor])
 
-  if(!editor) return null;
+  if (!editor) return null;
 
   return <div className='flex flex-col gap-[5px]'>
-    {editable && <div className='sticky top-0 z-10 bg-white border-[1px] shadow-white shadow-2xl border-gray-300 rounded-md'><MenuBar editor={editor}/></div>}
+    {editable && <div className='sticky top-0 z-10 bg-white border-[1px] shadow-white shadow-2xl border-gray-300 rounded-md'><MenuBar editor={editor} /></div>}
     <EditorContent editor={editor} />
   </div>
 }

@@ -1,8 +1,8 @@
 import {
     Bold, Italic, Strikethrough, Underline,
-    Heading1, Heading2, Heading3, 
+    Heading1, Heading2, Heading3,
     AlignLeft, AlignCenter, AlignRight, List, ListOrdered,
-    Link as LinkIcon
+    Link as LinkIcon, Image as ImageIcon, Music as AudioIcon
 } from 'lucide-react';
 import { Toggle } from "@/components/ui/toggle";
 import { Editor } from '@tiptap/react';
@@ -95,6 +95,55 @@ export default function MenuBar({ editor }: { editor: Editor }) {
             },
             pressed: editor.isActive('link'),
         },
+        {
+            icon: <ImageIcon />,
+            onClick: () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.onchange = async () => {
+                    const file = fileInput.files?.[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const base64 = reader.result as string;
+                        editor.chain().focus().setImage({ src: base64 }).run();
+                    };
+                    reader.readAsDataURL(file);
+                };
+                fileInput.click();
+            },
+            pressed: false, // image doesn’t toggle
+        },
+        {
+            icon: <AudioIcon />, // any icon you want
+            onClick: () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'audio/*';
+                fileInput.onchange = async () => {
+                    const file = fileInput.files?.[0];
+                    if (!file) return;
+
+                    // Option 1: Base64 audio (like images)
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const base64 = reader.result as string;
+                        editor.chain().focus().setAudio({ src: base64 }).run();
+                    };
+                    reader.readAsDataURL(file);
+
+                    // Option 2: Upload to server/Cloudinary and insert URL
+                    // const url = await uploadFile(file);
+                    // editor.chain().focus().setAudio({ src: url }).run();
+                };
+                fileInput.click();
+            },
+            pressed: false,
+        }
+
+
     ];
 
     return (

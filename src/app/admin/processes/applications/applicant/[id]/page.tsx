@@ -60,7 +60,7 @@ export default function RoundSummaryPage() {
     <div className={`${openSans.className} p-6 max-w-4xl mx-auto`}>
       {roundData.map((round) => {
         return <div key={round.roundId}>
-          <h1 className="text-2xl font-semibold text-slate-900">{round.roundName}</h1>
+          <h1 className="mt-5 text-2xl font-semibold text-slate-900">{round.roundName}</h1>
           <p className="mt-2 text-sm text-slate-600">Status: {round.roundStatus}</p>
 
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
