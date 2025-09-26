@@ -7,7 +7,7 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from "@tiptap/extension-text-align";
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
-import { Audio } from './extentions/audio.js';
+import Audio from './extensions/audio.js';
 import { TableKit } from "@tiptap/extension-table";
 import MenuBar from './MenuBar'
 

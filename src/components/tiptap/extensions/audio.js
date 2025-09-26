@@ -1,6 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 
-export const Audio = Node.create({
+const Audio = Node.create({
   name: 'audio',
 
   group: 'block',
@@ -19,19 +19,24 @@ export const Audio = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['audio', mergeAttributes(HTMLAttributes, { controls: true })]
+    return [
+      'audio',
+      mergeAttributes(HTMLAttributes, { controls: true }),
+    ]
   },
 
   addCommands() {
     return {
       setAudio:
         (options) =>
-          ({ commands }) => {
-            return commands.insertContent({
-              type: this.name,
-              attrs: options,
-            })
-          },
+        ({ commands }) => {
+          return commands.insertContent({
+            type: this.name,
+            attrs: options,
+          })
+        },
     }
   },
 })
+
+export default Audio
