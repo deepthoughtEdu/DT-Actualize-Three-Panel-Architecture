@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
     // Save temp file
     const buffer = Buffer.from(await file.arrayBuffer());
 
+    console.log("File size:", buffer.length);
     const result = await uploadFile(buffer);
 
     // if (type === "audio") {
