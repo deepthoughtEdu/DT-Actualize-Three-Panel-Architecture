@@ -14,7 +14,7 @@ export async function GET(
     const round = process.rounds.find((r) => String(r._id) === roundId);
     if (!round) return NextResponse.json({ error: "Round not found" }, { status: 404 });
 
-    if (round.type !== "form" || !Array.isArray(round.fields)) {
+    if (!Array.isArray(round.fields)) {
       return NextResponse.json({ error: "This round has no fields" }, { status: 400 });
     }
 
@@ -54,7 +54,7 @@ export async function PUT(
     if (!round)
       return NextResponse.json({ error: "Round not found" }, { status: 404 });
 
-    if (round.type !== "form" || !Array.isArray(round.fields)) {
+    if (!Array.isArray(round.fields)) {
       return NextResponse.json({ error: "This round has no editable fields" }, { status: 400 });
     }
 
@@ -97,7 +97,7 @@ export async function DELETE(
     if (!round)
       return NextResponse.json({ error: "Round not found" }, { status: 404 });
 
-    if (round.type !== "form" || !Array.isArray(round.fields)) {
+    if (!Array.isArray(round.fields)) {
       return NextResponse.json(
         { error: "This round has no fields to delete" },
         { status: 400 }

@@ -186,7 +186,7 @@ export default function ProcessDetailsPage() {
           {!isPublished && <div className="flex flex-wrap gap-2">
             <button
               onClick={() => router.push(`/admin/processes/${id}/publish`)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
               <IconPublish className="h-4 w-4" />
               Publish
@@ -212,7 +212,7 @@ export default function ProcessDetailsPage() {
           <button
             disabled={isPublished}
             onClick={handleCreate}
-            className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
           >
             <IconPlus className="h-4 w-4" />
             Add Round
@@ -248,54 +248,71 @@ export default function ProcessDetailsPage() {
                       </td>
                       <td className="px-4 py-3 text-slate-700">{round.type}</td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-wrap items-center justify-end gap-2">
-                          {/* <button
-                            onClick={() => handleView(round._id)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                            title="View"
-                          >
-                            <IconEye className="h-4 w-4" />
-                            View
-                          </button> */}
-                          <button
-                            disabled={isPublished}
-                            onClick={() => handleEdit(round._id)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-2.5 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
-                            title="Edit"
-                          >
-                            <IconEdit className="h-4 w-4" />
-                            Edit
-                          </button>
-                          <button
-                            disabled={isPublished}
-                            onClick={() => handleManage(round._id, round.type)}
-                            className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-white hover:opacity-95 ${round.type === "instruction" ? "bg-amber-600" : "bg-indigo-600"
-                              }`}
-                            title={round.type === "instruction" ? "Instruction" : "Fields"}
-                          >
-                            {round.type === "instruction" ? (
-                              <>
-                                <IconInstruction className="h-4 w-4" />
-                                Instruction
-                              </>
-                            ) : (
-                              <>
-                                <IconFields className="h-4 w-4" />
-                                Fields
-                              </>
-                            )}
-                          </button>
-                          <button
-                            disabled={isPublished}
-                            onClick={() => handleDelete(round._id)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1.5 text-sm font-medium text-white hover:bg-rose-700"
-                            title="Delete"
-                          >
-                            <IconTrash className="h-4 w-4" />
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+  <div className="flex flex-wrap items-center justify-end gap-2">
+    <button
+      disabled={isPublished}
+      onClick={() => handleEdit(round._id)}
+      className="cursor-pointer inline-flex items-center gap-1 rounded-lg bg-blue-600 px-2.5 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+      title="Edit"
+    >
+      <IconEdit className="h-4 w-4" />
+      Edit
+    </button>
+
+    {round.type === "hybrid" ? (
+      <>
+        <button
+          disabled={isPublished}
+          onClick={() => handleManage(round._id, "instruction")}
+          className="cursor-pointer inline-flex items-center gap-1 rounded-lg bg-amber-600 px-2.5 py-1.5 text-sm font-medium text-white hover:opacity-95"
+          title="Instruction"
+        >
+          <IconInstruction className="h-4 w-4" />
+          Instructions
+        </button>
+        <button
+          disabled={isPublished}
+          onClick={() => handleManage(round._id, "form")}
+          className="cursor-pointer inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-sm font-medium text-white hover:opacity-95"
+          title="Fields"
+        >
+          <IconFields className="h-4 w-4" />
+          Fields
+        </button>
+      </>
+    ) : (
+      <button
+        disabled={isPublished}
+        onClick={() => handleManage(round._id, round.type)}
+        className={`cursor-pointer inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-white hover:opacity-95 ${round.type === "instruction" ? "bg-amber-600" : "bg-indigo-600"}`}
+        title={round.type === "instruction" ? "Instruction" : "Fields"}
+      >
+        {round.type === "instruction" ? (
+          <>
+            <IconInstruction className="h-4 w-4" />
+            Instructions
+          </>
+        ) : (
+          <>
+            <IconFields className="h-4 w-4" />
+            Fields
+          </>
+        )}
+      </button>
+    )}
+
+    <button
+      disabled={isPublished}
+      onClick={() => handleDelete(round._id)}
+      className="cursor-pointer inline-flex items-center gap-1 rounded-lg bg-rose-600 px-2.5 py-1.5 text-sm font-medium text-white hover:bg-rose-700"
+      title="Delete"
+    >
+      <IconTrash className="h-4 w-4" />
+      Delete
+    </button>
+  </div>
+</td>
+
                     </tr>
                   ))
               )}

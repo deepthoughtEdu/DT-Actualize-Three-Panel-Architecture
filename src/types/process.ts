@@ -29,12 +29,8 @@ export interface ChoiceField {
   options: string[];
   correctAnswer?: string[];
 }
-interface Uploads {
-  url: string;
-  type: "image" | "audio";
-}
 
-export type RoundType = "form" | "instruction";
+export type RoundType = "form" | "instruction" | "hybrid";
 
 export interface BaseRound {
   _id: string;
@@ -51,20 +47,16 @@ export interface FormRound extends BaseRound {
 export interface InstructionRound extends BaseRound {
   type: "instruction";
   instruction: string; // long text / markdown instructions
-  uploads?:Uploads[];
   fields?: never;      // ❌ not allowed for instruction rounds
 }
 
-export type Round = FormRound | InstructionRound;
+export interface HybridRound extends BaseRound {
+  type: "hybrid";
+  instruction: string;
+  fields: Field[];
+}
 
-
-// export interface Round {
-//   _id: ObjectId;       // or ObjectId if you’re keeping it as Mongo ObjectId
-//   order: number;
-//   title: string;
-//   type: string;
-//   fields: Field[];     // refine this later to match field schema
-// }
+export type Round = FormRound | InstructionRound | HybridRound;
 
 export interface Submission {
   _id?: ObjectId;

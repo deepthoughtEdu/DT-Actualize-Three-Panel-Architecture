@@ -57,8 +57,9 @@ export async function GET(
         for (const round of application.rounds) {
             const processRound = process.rounds.find((r: any) => r._id.toString() === round.roundId.toString());
 
-            // Only process rounds of type 'form'
-            if (processRound?.type === 'form') {
+            console.log(processRound);
+
+            if (processRound?.type === 'form' || processRound?.type === 'hybrid') {
                 const fieldsWithAnswers = processRound.fields.map((field: any) => {
                     const answer = round.answers.find((a: any) => a.fieldId.toString() === field._id.toString());
                     return {

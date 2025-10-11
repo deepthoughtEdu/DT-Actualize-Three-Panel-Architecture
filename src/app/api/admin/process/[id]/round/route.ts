@@ -5,75 +5,6 @@ import { verifyToken } from "@/utils/auth";
 import { getAdminById } from "@/lib/adminService";
 import { Round } from "@/types";
 
-// export async function POST(
-//   req: NextRequest,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     // ✅ Authorization header
-//     const authHeader = req.headers.get("authorization");
-//     if (!authHeader?.startsWith("Bearer ")) {
-//       return NextResponse.json(
-//         { error: "Unauthorized: Missing token" },
-//         { status: 401 }
-//       );
-//     }
-
-//     // ✅ Decode token
-//     const token = authHeader.split(" ")[1];
-//     const decoded = verifyToken<{ id: string }>(token);
-//     if (!decoded?.id) {
-//       return NextResponse.json(
-//         { error: "Unauthorized: Invalid token" },
-//         { status: 401 }
-//       );
-//     }
-
-//     // ✅ Ensure admin exists
-//     const admin = await getAdminById(decoded.id);
-//     if (!admin) {
-//       return NextResponse.json(
-//         { error: "Forbidden: Not an admin" },
-//         { status: 403 }
-//       );
-//     }
-//     // --- round creation logic ---
-//     const processId = params.id;
-//     const { title, type, fields } = await req.json();
-
-//     const process = await getProcessById(processId);
-//     if (!process) {
-//       return NextResponse.json(
-//         { error: "Process not found" },
-//         { status: 404 }
-//       );
-//     }
-
-//     const newRoundId = new ObjectId();
-//     const newRound = {
-//       _id: newRoundId,
-//       order: process.rounds.length + 1,
-//       title: title || "Untitled Round",
-//       type: type || "form",
-//       fields: fields || [],
-//     };
-
-//     const updatedRounds = [...process.rounds, newRound];
-//     await updateProcess(processId, { rounds: updatedRounds });
-
-//     return NextResponse.json({
-//       message: "Round created successfully",
-//       roundId: newRoundId.toString(),
-//     });
-//   } catch (err) {
-//     console.error("Error creating round:", err);
-//     return NextResponse.json(
-//       { error: "Failed to create round" },
-//       { status: 500 }
-//     );
-//   }
-// }
-
 export async function POST(
   req: NextRequest,
   { params }: { params: any }
@@ -137,7 +68,16 @@ export async function POST(
         type: "instruction",
         instruction: instruction || "",
       };
-    } else {
+    } else if (type === "hybrid") {
+  newRound = {
+    _id: newRoundId,
+    order: process.rounds.length + 1,
+    title: title || "Hybrid Round",
+    type: "hybrid",
+    instruction: instruction || "",
+    fields: fields || [],
+  };
+} else {
       return NextResponse.json(
         { error: "Invalid round type" },
         { status: 400 }

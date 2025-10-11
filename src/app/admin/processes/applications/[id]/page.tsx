@@ -137,7 +137,7 @@ export default function ApplicantsPage() {
                       {/* Actions */}
                       <td className="px-4 py-3 text-right">
                         <button
-                          className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition"
+                          className="cursor-pointer inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition"
                           style={{
                             borderColor: PURPLE,
                             color: PURPLE,

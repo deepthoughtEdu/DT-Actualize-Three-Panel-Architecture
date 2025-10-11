@@ -12,7 +12,7 @@ export default function CreateRoundPage() {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<"form" | "instruction">("form");
+  const [type, setType] = useState<"form" | "instruction" | "hybrid">("form");
   const [instruction, setInstruction] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -38,9 +38,12 @@ export default function CreateRoundPage() {
       setLoading(true);
 
       const payload =
-        type === "form"
-          ? { title: title.trim(), type: "form", fields: [] as string[] }
-          : { title: title.trim(), type: "instruction", instruction };
+  type === "form"
+    ? { title: title.trim(), type: "form", fields: [] as string[] }
+    : type === "instruction"
+    ? { title: title.trim(), type: "instruction", instruction }
+    : { title: title.trim(), type: "hybrid", instruction, fields: [] as string[] };
+
 
       const res = await fetch(`/api/admin/process/${id}/round`, {
         method: "POST",
@@ -99,11 +102,10 @@ export default function CreateRoundPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Phone Screen"
-              className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                titleError
+              className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${titleError
                   ? "border-rose-300 focus:ring-rose-400"
                   : "border-slate-200 focus:ring-blue-500"
-              }`}
+                }`}
               maxLength={120}
               autoFocus
             />
@@ -119,9 +121,8 @@ export default function CreateRoundPage() {
           <div>
             <span className="block text-sm font-medium text-slate-800">Type</span>
             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <label className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
-                type === "form" ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:bg-slate-50"
-              }`}>
+              <label className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${type === "form" ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:bg-slate-50"
+                }`}>
                 <input
                   type="radio"
                   name="type"
@@ -129,11 +130,10 @@ export default function CreateRoundPage() {
                   checked={type === "form"}
                   onChange={() => setType("form")}
                 />
-                Form (collect answers)
+                Form (questions)
               </label>
-              <label className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
-                type === "instruction" ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:bg-slate-50"
-              }`}>
+              <label className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${type === "instruction" ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:bg-slate-50"
+                }`}>
                 <input
                   type="radio"
                   name="type"
@@ -141,7 +141,19 @@ export default function CreateRoundPage() {
                   checked={type === "instruction"}
                   onChange={() => setType("instruction")}
                 />
-                Instruction (read-only step)
+                Instruction (read-only round)
+              </label>
+
+              <label className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${type === "hybrid" ? "border-blue-300 bg-blue-50" : "border-slate-200 hover:bg-slate-50"
+                }`}>
+                <input
+                  type="radio"
+                  name="type"
+                  value="hybrid"
+                  checked={type === "hybrid"}
+                  onChange={() => setType("hybrid")}
+                />
+                Hybrid (instruction + questions)
               </label>
             </div>
           </div>
@@ -152,7 +164,7 @@ export default function CreateRoundPage() {
               <label htmlFor="instruction" className="block text-sm font-medium text-slate-800">
                 Instruction
               </label>
-              <TiptapEditor 
+              <TiptapEditor
                 content={instruction}
                 onContentUpdate={setInstruction}
                 editable={true}

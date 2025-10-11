@@ -3,195 +3,132 @@ import { connectDB } from "@/lib/db";
 import { Application } from "@/types/application";
 import { ObjectId } from "mongodb";
 import { verifyToken } from "@/utils/auth";
-import { Process } from "@/types";
 
-export async function POST(
-  req: NextRequest,
-  context: any
-) {
+export async function POST(req: NextRequest, context: any) {
   try {
-    const params = await context.params;
+    const { id, roundId } = context.params;
 
+    // ✅ Auth check
     const authHeader = req.headers.get("authorization");
-    if (!authHeader)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+    if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const token = authHeader.split(" ")[1];
     const payload = verifyToken<{ id: string }>(token);
-    if (!payload)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const appId = new ObjectId(params.id); // Application ID
+    const appId = new ObjectId(id);
     const candidateId = new ObjectId(payload.id);
-    const roundId = params.roundId; // store as string
-
     const body = await req.json();
     const { answers } = body;
 
     const db = await connectDB();
 
-    // ✅ Find the application
-    const app = await db.collection<Application>("applications").findOne({
+    // ✅ Fetch application
+    const app = await db.collection("applications").findOne({
       processId: appId,
       candidateId: candidateId,
     });
+    if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
 
-    if (!app) {
-      return NextResponse.json(
-        { error: "Application not found" },
-        { status: 404 }
-      );
-    }
+    // ✅ Fetch process to get round order
+    const process = await db.collection("processes").findOne({ _id: app.processId });
+    if (!process) return NextResponse.json({ error: "Process not found" }, { status: 404 });
 
-    // ✅ Find the process to get total rounds
-    const process = await db.collection<Process>("processes").findOne({
-      _id: app.processId,
-    });
-
-    if (!process) {
-      return NextResponse.json({ error: "Process not found" }, { status: 404 });
-    }
-
-    // ✅ Check if this round already exists in application
-    const roundExists = app.rounds.some(
-      (r) => r.roundId === roundId
-    );
+    // Check if current round exists
+    const roundExists = app.rounds.some((r: any) => r.roundId === roundId);
 
     if (roundExists) {
-      // Update existing round
+      // ✅ Update current round to 'submitted' with answers
       const updateFields: any = { "rounds.$.status": "submitted" };
-
       if (answers && Array.isArray(answers)) {
-        updateFields["rounds.$.answers"] = answers.map(
-          (a: { fieldId: string; answer: any }) => ({
-            fieldId: new ObjectId(a.fieldId),
-            answer: a.answer,
-          })
-        );
+        updateFields["rounds.$.answers"] = answers.map((a: any) => ({
+          fieldId: new ObjectId(a.fieldId),
+          answer: a.answer,
+        }));
       }
 
-      await db.collection<Application>("applications").updateOne(
-        {
-          processId: appId,
-          candidateId: candidateId,
-          "rounds.roundId": roundId,
-        },
+      await db.collection("applications").updateOne(
+        { processId: appId, candidateId: candidateId, "rounds.roundId": roundId },
         { $set: updateFields }
       );
     } else {
-      // Add new round entry
+      // ✅ Add new round entry if it doesn't exist
       const roundData: any = {
-        roundId: roundId,
+        roundId,
         status: "submitted",
-        answers: [],
-        // submission: [],
+        answers: answers?.map((a: any) => ({
+          fieldId: new ObjectId(a.fieldId),
+          answer: a.answer,
+        })) || [],
       };
 
-      if (answers && Array.isArray(answers)) {
-        roundData.answers = answers.map(
-          (a: { fieldId: string; answer: any }) => ({
-            fieldId: new ObjectId(a.fieldId),
-            answer: a.answer,
-          })
-        );
-      }
-
-      await db.collection<Application>("applications").updateOne(
-        {
-          processId: appId,
-          candidateId: candidateId,
-        },
+      await db.collection("applications").updateOne(
+        { processId: appId, candidateId: candidateId },
         { $push: { rounds: roundData } }
       );
     }
 
-    // ✅ Reload updated application
-    const updatedApp = await db
-      .collection<Application>("applications")
-      .findOne({
-        processId: appId,
-        candidateId: candidateId,
-      });
-
-    if (!updatedApp) {
-      return NextResponse.json(
-        { error: "Failed to reload application" },
-        { status: 500 }
-      );
-    }
-
-    const uniqueRounds = new Map();
-    updatedApp.rounds.forEach((r) => {
-      uniqueRounds.set(r.roundId, r);
+    // Reload updated application
+    const updatedApp = await db.collection("applications").findOne({
+      processId: appId,
+      candidateId: candidateId,
     });
-    // console.log("UR",uniqueRounds.values());
+    if (!updatedApp) return NextResponse.json({ error: "Failed to reload application" }, { status: 500 });
 
-    // Build a map of submitted rounds
-    const submittedMap = new Map(
-      updatedApp.rounds.map((r) => [r.roundId, r.status])
-    );
+    // ✅ Map roundId → status
+    const roundStatusMap = new Map(updatedApp.rounds.map((r: any) => [r.roundId, r.status]));
 
-    // ✅ Count how many rounds in process are submitted
+    // ✅ Count submitted rounds
     const submittedRoundsCount = process.rounds.filter(
-      (round) => submittedMap.get(round._id) === "submitted"
+      (r: any) => roundStatusMap.get(r._id) === "submitted"
     ).length;
 
-    console.log(submittedRoundsCount);
-    
-
-    const totalRoundsCount = process.rounds.length;
-    console.log(totalRoundsCount);
-
-    // ✅ Determine if this is the first round submission
-    const isFirstSubmission = updatedApp.status === "applied";
-
-    if (submittedRoundsCount >= totalRoundsCount) {
-      // ✅ All rounds completed → mark as completed
-      await db
-        .collection<Application>("applications")
-        .updateOne(
-          { processId: appId, candidateId: candidateId },
-          { $set: { status: "completed", currentRoundIndex: null } }
-        );
-      console.log("Rounds after update:", updatedApp.rounds);
-
-      return NextResponse.json({ success: true, nextRoundIndex: null });
-    } else {
-      // ✅ Still rounds left → if first submission, update status to "in-progress"
-      const newStatus = isFirstSubmission ? "in-progress" : updatedApp.status;
-
-      // ✅ Find the next round that is not submitted
-      const nextIndex = updatedApp.rounds.findIndex(
-        (r) => r.status !== "submitted"
+    // ✅ If all rounds submitted → mark application completed
+    if (submittedRoundsCount === process.rounds.length) {
+      await db.collection("applications").updateOne(
+        { processId: appId, candidateId: candidateId },
+        { $set: { status: "completed", currentRoundIndex: null, currentRoundTitle: null } }
       );
-      // console.log(nextIndex);
+      return NextResponse.json({ success: true, nextRoundIndex: null });
+    }
 
-      const validNextIndex = nextIndex !== -1 ? nextIndex : 0;
-      const nextTitle = process.rounds[validNextIndex].title;
+    // ✅ Find next round in process order
+    const nextRoundInProcessOrder = process.rounds.find((r: any) => {
+      const status = roundStatusMap.get(r._id);
+      return status !== "submitted";
+    });
 
-      await db.collection<Application>("applications").updateOne(
+    if (nextRoundInProcessOrder) {
+      const nextAppRound = updatedApp.rounds.find((r: any) => r.roundId === nextRoundInProcessOrder._id);
+
+      // ✅ Only update to 'in-progress' if not submitted already
+      if (nextAppRound && nextAppRound.status !== "submitted" && nextAppRound.status !== "in-progress") {
+        await db.collection("applications").updateOne(
+          { processId: appId, candidateId: candidateId, "rounds.roundId": nextAppRound.roundId },
+          { $set: { "rounds.$.status": "in-progress" } }
+        );
+      }
+
+      const nextIndex = process.rounds.findIndex((r: any) => r._id === nextRoundInProcessOrder._id);
+
+      await db.collection("applications").updateOne(
         { processId: appId, candidateId: candidateId },
         {
           $set: {
-            currentRoundIndex: validNextIndex,
-            currentRoundTitle: nextTitle,
-            status: newStatus,
+            currentRoundIndex: nextIndex,
+            currentRoundTitle: nextRoundInProcessOrder.title,
+            status: updatedApp.status === "applied" ? "in-progress" : updatedApp.status,
           },
         }
       );
-      // console.log("Rounds after update:", updatedApp.rounds);
 
-      return NextResponse.json({
-        success: true,
-        nextRoundIndex: validNextIndex,
-      });
+      return NextResponse.json({ success: true, nextRoundIndex: nextIndex });
     }
+
+    // Fallback if next round not found
+    return NextResponse.json({ success: true, nextRoundIndex: null });
   } catch (err) {
     console.error("Submit round error:", err);
-    return NextResponse.json(
-      { error: "Failed to submit round" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to submit round" }, { status: 500 });
   }
 }
 /**

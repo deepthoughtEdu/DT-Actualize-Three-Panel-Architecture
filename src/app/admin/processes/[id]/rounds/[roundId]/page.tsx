@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Open_Sans } from "next/font/google";
-import TiptapEditor from "@/components/tiptap/TiptapEditor";
 
 const openSans = Open_Sans({ subsets: ["latin"] });
 
@@ -143,68 +142,6 @@ export default function RoundDetailsPage() {
         </div>
       </div>
 
-      {/* Instructions */}
-      {round.instruction && (
-        <div className=" flex flex-col gap-4 mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-sm pb-2 font-semibold text-slate-800">Instructions</h2>
-          <TiptapEditor
-            editable={false}
-            content={round.instruction}
-          />
-
-          {/* Uploads */}
-          {/* {Array.isArray(round.uploads) && round.uploads.length > 0 && (
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {round.uploads.map((u, idx) => (
-                <div
-                  key={idx}
-                  className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50"
-                >
-                  {u.type === "image" ? (
-                    <Image
-                      src={u.url}
-                      alt="instruction upload"
-                      className="h-64 w-full bg-white object-contain"
-                    />
-                  ) : (
-                    <div className="p-3">
-                      <audio controls className="w-full">
-                        <source src={u.url} type="audio/mpeg" />
-                        Your browser does not support the audio element.
-                      </audio>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )} */}
-          {round.uploads && round.uploads.length > 0 && (
-            <div className="space-y-4 mb-6 w-fit min-w-md mx-[200px]">
-              {round.uploads.map((u, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
-                >
-                  {u.type === "image" && (
-                    <img
-                      src={u.url}
-                      alt="Instruction upload"
-                      className="max-w-sm rounded-lg h-[200px] mx-auto"
-                    />
-                  )}
-                  {u.type === "audio" && (
-                    <audio controls className="w-full mt-2">
-                      <source src={u.url} type="audio/mp3" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Fields (skip for instruction-only round) */}
       {round.type !== "instruction" && (
         <div className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -224,7 +161,7 @@ export default function RoundDetailsPage() {
                 onClick={() =>
                   router.push(`/admin/processes/${processId}/rounds/${roundId}/field/create`)
                 }
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700"
+                className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700"
               >
                 <IconPlus className="h-4 w-4" />
                 Add Field
@@ -259,7 +196,7 @@ export default function RoundDetailsPage() {
                       <td className=''>
                         <button
                           onClick={() => handleDeleteField(field._id)}
-                          className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
+                          className="cursor-pointer rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
                         >
                           Delete
                         </button>
