@@ -112,7 +112,6 @@ export default function RoundLayout({
     setShowTimelineModal(false);
   };
 
-
   // Find the current round status
   const currentRoundStatus = completedRounds.find(
     (r) => r.roundId === roundId
@@ -178,14 +177,19 @@ export default function RoundLayout({
           {/* 🧩 Round Progression */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-blue-800">Your Progress</h2>
-            <button
+            <div
+              className="text-md font-bold text-green-700 transition mr-1"
+            >
+              {completedRoundsCount} / {totalRounds}
+            </div>
+            {/* <button
               onClick={() => setShowPercentage((prev) => !prev)}
               className="text-md font-bold cursor-pointer text-green-700 transition mr-1"
             >
               {showPercentage
                 ? `${completionPercentage}%`
                 : `${completedRoundsCount} / ${totalRounds}`}
-            </button>
+            </button> */}
           </div>
 
 

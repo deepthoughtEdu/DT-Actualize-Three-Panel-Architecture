@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, EyeOff, Eye } from "lucide-react";
 import { useIsLocked } from "../../Context";
 import Form from "@/components/rounds/Form";
 import Instructions from "@/components/rounds/Instructions";
@@ -41,6 +41,7 @@ export default function RoundSubmissionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(true);
 
   // ✅ Fetch process + application answers
   useEffect(() => {
@@ -227,7 +228,7 @@ export default function RoundSubmissionPage() {
 
   return (
     <div className="h-[calc(100vh-64px)] bg-gradient-to-b from-sky-500 to-blue-900 text-gray-800">
-      <div className="container mx-auto px-4 py-6 flex flex-col h-full">
+      <div className="container mx-auto py-6 flex flex-col h-full">
 
         {/* ✅ Header (Round heading and description) */}
         <header className="text-center mt-6">
@@ -237,7 +238,7 @@ export default function RoundSubmissionPage() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="flex-1 flex items-center justify-center"
           >
-            <h1 className="mb-10 text-4xl font-bold text-white drop-shadow-md">{round.title}</h1>
+            <h1 className="mb-1 text-4xl font-bold text-white drop-shadow-md">{round.title}</h1>
           </motion.main>
         </header>
 
@@ -264,28 +265,52 @@ export default function RoundSubmissionPage() {
             />
           )}
 
-          {round.type === "hybrid" && (
-            <div className="flex flex-col md:flex-row w-full gap-6">
-              {/* Left column: Form */}
-              <div className="md:w-1/2">
-                <Form
-                  fields={round.fields}
-                  answers={answers}
-                  isLocked={isLocked}
-                  onChange={handleChange}
-                />
-              </div>
+{round.type === "hybrid" && (
+  <div className="w-full">
+    {/* Toggle aligned to the right */}
+    <div className="flex justify-end mb-2">
+      <button
+        onClick={() => setShowInstructions(prev => !prev)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 transition shadow-md"
+      >
+        {showInstructions ? (
+          <>
+            <EyeOff className="w-4 h-4" /> Hide Guidelines
+          </>
+        ) : (
+          <>
+            <Eye className="w-4 h-4" /> View Guidelines
+          </>
+        )}
+      </button>
+    </div>
 
-              {/* Right column: Instructions */}
-              <div className="md:w-1/2">
-                <Instructions
-                  instruction={round.instruction}
-                  uploads={round.uploads}
-                />
+    {/* Left–Right layout */}
+    <div className="flex flex-col md:flex-row w-full gap-6">
+      {/* Left: Form (flex-1 so it fills remaining space) */}
+      <div className="w-full">
+        <Form
+          fields={round.fields}
+          answers={answers}
+          isLocked={isLocked}
+          onChange={handleChange}
+        />
+      </div>
 
-              </div>
-            </div>
-          )}
+      {/* Right: Instructions (fixed width on desktop; stacked on mobile) */}
+      {showInstructions && (
+        <div className="w-3/6">
+          <Instructions
+            instruction={round.instruction}
+            uploads={round.uploads}
+          />
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+
         </motion.main>
 
         {/* Navigation Buttons */}
@@ -326,8 +351,8 @@ export default function RoundSubmissionPage() {
             </button>
           }
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 
 }
