@@ -209,7 +209,7 @@ export default function InstructionPage() {
   }
 
   return (
-    <div className={`${openSans.className} mx-auto max-w-[54vw] p-4 md:p-8`}>
+    <div className={`${openSans.className} mx-auto w-[60vw] p-4 md:p-8`}>
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Manage Instruction</h1>
@@ -234,22 +234,22 @@ export default function InstructionPage() {
       )}
 
       {/* Editor card */}
-      <div className="rounded-xl w-fit border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl w-full border border-slate-200 bg-white p-4 shadow-sm">
         <TiptapEditor editable={true} content={instruction} onContentUpdate={setInstruction} />
       </div>
 
       {/* Footer actions */}
-      <div className="mt-6 flex items-center justify-end gap-2">
+      <div className="mt-6 flex items-center justify-center gap-2">
         <button
           onClick={() => router.push(`/admin/processes/${id}`)}
-          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Back
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+          className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {saving ? (
             <>
@@ -267,7 +267,7 @@ export default function InstructionPage() {
           <button
             onClick={handleDelete}
             disabled={saving}
-            className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="cursor-pointer rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
             Delete
           </button>

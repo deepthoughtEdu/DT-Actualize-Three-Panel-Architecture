@@ -4,9 +4,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import TiptapEditor from "@/components/tiptap/TiptapEditor";
-
+import { ArrowLeft, ArrowRight, EyeOff, Eye } from "lucide-react";
+import { useIsLocked } from "../../Context";
+import Form from "@/components/rounds/Form";
+import Instructions from "@/components/rounds/Instructions";
 
 interface Field {
   _id: string;
@@ -14,28 +15,25 @@ interface Field {
   subType: "shortText" | "fileUpload" | "number";
 }
 
-
 interface Upload {
   url: string;
   type: "image" | "audio";
 }
 
-
 interface Round {
   _id: string;
   order: number;
   title: string;
-  type: "form" | "instruction";
+  type: "form" | "instruction" | "hybrid";
   fields?: Field[];
   instruction?: string;
   uploads?: Upload[];
 }
 
-
 export default function RoundSubmissionPage() {
   const { id, roundId } = useParams<{ id: string; roundId: string }>();
   const router = useRouter();
-
+  const isLocked = useIsLocked();
 
   const [rounds, setRounds] = useState<Round[]>([]);
   const [round, setRound] = useState<Round | null>(null);
@@ -43,30 +41,7 @@ export default function RoundSubmissionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-
-  console.log(saving);
-
-  // ✅ Mark round in-progress
-  useEffect(() => {
-    const markInProgress = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-
-      await fetch(`/api/candidate/applications/${id}/round/${roundId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ answers: [] }),
-      });
-    };
-
-
-    markInProgress();
-  }, [id, roundId]);
-
+  const [showInstructions, setShowInstructions] = useState(true);
 
   // ✅ Fetch process + application answers
   useEffect(() => {
@@ -150,9 +125,33 @@ export default function RoundSubmissionPage() {
     }
   };
 
-
   // ✅ Full round submit
   const handleSubmit = async () => {
+    if ((round?.type === "form" || round?.type === "hybrid") && round.fields) {
+      const unansweredFields = round.fields.filter(
+        (field) => !answers[field._id] || answers[field._id].trim() === ""
+      );
+
+      if (unansweredFields.length > 0) {
+        // Scroll to first unanswered field and highlight
+        const firstFieldId = unansweredFields[0]._id;
+        const el = document.getElementById(firstFieldId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // Optionally, flash red border
+        unansweredFields.forEach((field) => {
+          const elem = document.getElementById(field._id);
+          if (elem) {
+            elem.classList.add("border-red-500");
+            setTimeout(() => elem.classList.remove("border-red-500"), 2000);
+          }
+        });
+
+        return; // Stop submission
+      }
+    }
+
+    // ✅ Proceed with saving & submitting
     setSubmitting(true);
     try {
       const payload =
@@ -164,7 +163,6 @@ export default function RoundSubmissionPage() {
             })),
           }
           : {};
-
 
       const res = await fetch(
         `/api/candidate/applications/${id}/round/${roundId}`,
@@ -178,16 +176,14 @@ export default function RoundSubmissionPage() {
         }
       );
 
-
       if (!res.ok) throw new Error("Submission failed");
-
 
       const currentIndex = rounds.findIndex((r) => r._id === roundId);
       if (currentIndex !== -1 && currentIndex < rounds.length - 1) {
         const nextRoundId = rounds[currentIndex + 1]._id;
         router.push(`/candidate/processes/${id}/round/${nextRoundId}`);
       } else {
-        router.push(`/candidate/dashboard`);
+        router.push(`/candidate/processes/${id}/certificate`)
       }
     } catch (err) {
       console.error(err);
@@ -197,301 +193,168 @@ export default function RoundSubmissionPage() {
   };
 
 
+  // ✅ Back button handler
+  const handleBack = () => {
+    if (currentRoundIndex === 1) {
+      // If Round 1 → go to dashboard
+      router.push("/candidate/dashboard");
+    } else {
+      // Else → go to previous round
+      const prevRoundId = rounds[currentRoundIndex - 2]?._id;
+      if (prevRoundId) {
+        router.push(`/candidate/processes/${id}/round/${prevRoundId}`);
+      }
+    }
+  };
+
+
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-gray-600">Loading round...</p>
+      <div className="flex h-screen items-center justify-center min-h-screen bg-gradient-to-b from-sky-500 to-blue-900">
+        <p className="text-white">Loading round...</p>
       </div>
     );
   }
-
 
   if (!round) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-red-500">Round not found</p>
+      <div className="flex h-screen items-center justify-center min-h-screen bg-gradient-to-b from-sky-500 to-blue-900">
+        <p className="text-white-500">Round not found</p>
       </div>
     );
   }
 
-
   const currentRoundIndex = rounds.findIndex((r) => r._id === roundId) + 1;
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-500 to-blue-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Progress tracker */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 text-center"
-        >
-          <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mb-4">
-            <div
-              className="bg-blue-600 h-2 transition-all"
-              style={{
-                width: `${(currentRoundIndex / rounds.length) * 100}%`,
-              }}
-            />
-          </div>
-          <p className="text-sm text-white font-medium">
-            Round {currentRoundIndex} of {rounds.length}
-          </p>
-        </motion.div>
+    <div className="h-[calc(100vh-64px)] bg-gradient-to-b from-sky-500 to-blue-900 text-gray-800">
+      <div className="container mx-auto py-6 flex flex-col h-full">
 
+        {/* ✅ Header (Round heading and description) */}
+        <header className="text-center mt-6">
+          <motion.main
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex-1 flex items-center justify-center"
+          >
+            <h1 className="mb-1 text-4xl font-bold text-white drop-shadow-md">{round.title}</h1>
+          </motion.main>
+        </header>
 
-        {/* Main card */}
+        {/* ✅ Main Body (Instructions or Form) */}
         <motion.main
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="flex items-center justify-center min-h-[calc(100vh-200px)]"
+          className="flex-1 flex flex-col md:flex-row gap-6 items-start justify-center"
         >
-          {/* ✅ Instruction Round */}
           {round.type === "instruction" && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="w-fit  mx-auto bg-white rounded-xl shadow-lg p-8"
-            >
-              <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
-                {round.title}
-              </h1>
-              <p className="text-lg text-gray-600 text-center mb-6">
-                Please review the following instructions before proceeding.
-              </p>
-
-
-              {round.instruction && (
-                <div className="mb-6">
-                  <TiptapEditor editable={false} content={round.instruction} />
-                </div>
-              )}
-
-
-              {round.uploads && round.uploads.length > 0 && (
-                <div className="space-y-4 mb-6">
-                  {round.uploads.map((u, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-xl border border-gray-200 p-3 bg-gray-50 shadow-sm"
-                    >
-                      {u.type === "image" && (
-                        <img
-                          src={u.url}
-                          alt="Instruction upload"
-                          className="max-w-sm rounded-lg h-[200px] mx-auto"
-                        />
-                      )}
-                      {u.type === "audio" && (
-                        <audio controls className="w-full mt-2">
-                          <source src={u.url} type="audio/mp3" />
-                          Your browser does not support the audio element.
-                        </audio>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-
-              <div className="flex justify-between gap-4 mt-8">
-                <button
-                  onClick={() => router.push("/candidate/dashboard")}
-                  disabled={submitting}
-                  className="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 transition disabled:opacity-50"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Return to Dashboard
-                </button>
-
-
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-md hover:scale-105 transition disabled:opacity-50"
-                >
-                  {submitting ? "Proceeding..." : "Proceed to Next Round"}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
+            <Instructions
+              instruction={round.instruction}
+              uploads={round.uploads}
+            />
           )}
 
-
-          {/* ✅ Form Round */}
           {round.type === "form" && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8"
-            >
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmit();
-                }}
-                className="space-y-6"
-              >
-                <div className="text-center mb-8">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                    {round.title}
-                  </h1>
-                  <p className="text-lg text-gray-600">
-                    Please fill out the form below.
-                  </p>
-                </div>
-
-
-                <div className="space-y-6 h-[510px] overflow-x">
-                  {round.fields?.map((field, index) => (
-                    <motion.div
-                      key={field._id}
-                      initial={{ x: -30, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{
-                        delay: 0.3 + index * 0.1,
-                        duration: 0.4,
-                      }}
-                      className="space-y-2"
-                    >
-                      <label
-                        htmlFor={field._id}
-                        className="text-sm font-medium text-gray-800"
-                      >
-                        {field.question}
-                        <span className="text-red-500 ml-1">*</span>
-                      </label>
-                      {field.subType === "fileUpload" ? (
-                        <div className="space-y-2">
-                          {!answers[field._id] ? (
-                            <>
-                              <input
-                                type="file"
-                                id={field._id}
-                                required
-                                onChange={async (e) => {
-                                  const file = e.target.files?.[0];
-                                  if (!file) return;
-
-                                  const formData = new FormData();
-                                  formData.append("file", file);
-                                  formData.append("type", "file");
-
-                                  try {
-                                    setSaving(true);
-                                    const token = localStorage.getItem("token");
-                                    const res = await fetch("/api/admin/upload", {
-                                      method: "POST",
-                                      headers: {
-                                        Authorization: `Bearer ${token}`,
-                                      },
-                                      body: formData,
-                                    });
-
-                                    if (!res.ok) throw new Error("Upload failed");
-                                    const data = await res.json();
-
-                                    // save the uploaded file URL as the answer
-                                    handleChange(field._id, data.url);
-                                  } catch (err) {
-                                    console.error("File upload failed:", err);
-                                  }
-                                  setSaving(false);;
-                                }}
-                                className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              />
-                            </>
-                          ) : (
-                            <div className="flex items-center justify-between border p-3 rounded-lg">
-                              <a
-                                href={answers[field._id]}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline"
-                              >
-                                View Uploaded File
-                              </a>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  try {
-                                    // const token = localStorage.getItem("token");
-                                    // const res = await fetch(`/api/admin/process/${id}/round/${roundId}/upload?url=${encodeURIComponent(answers[field._id])}`, {
-                                    //   method: "DELETE",
-                                    //   headers: {
-                                    //     Authorization: `Bearer ${token}`,
-                                    //   },
-                                    // });
-
-                                    // if (!res.ok) throw new Error("Delete failed");
-                                    handleChange(field._id, ""); // clear answer
-                                  } catch (err) {
-                                    console.error("Delete failed:", err);
-                                  }
-                                }}
-                                className="text-red-600 hover:underline"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <input
-                          type={field.subType === "number" ? "number" : "text"}
-                          id={field._id}
-                          value={answers[field._id] || ""}
-                          onChange={(e) => handleChange(field._id, e.target.value)}
-                          className="w-full border rounded-lg p-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          required
-                        />
-                      )}
-
-                    </motion.div>
-                  ))}
-                </div>
-
-
-                {/* {saving && (
-                  <p className="text-sm text-gray-500">Saving draft...</p>
-                )} */}
-
-
-                <div className="flex justify-between gap-4 mt-8">
-                  <button
-                    type="button"
-                    onClick={() => router.push("/candidate/dashboard")}
-                    disabled={submitting}
-                    className="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 transition disabled:opacity-50"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Return to Dashboard
-                  </button>
-
-
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md hover:scale-105 transition disabled:opacity-50"
-                  >
-                    {saving ? "Saving..." : "Submit & Continue"}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+            <Form
+              fields={round.fields}
+              answers={answers}
+              isLocked={isLocked}
+              onChange={handleChange}
+            />
           )}
-        </motion.main>
-      </div>
+
+{round.type === "hybrid" && (
+  <div className="w-full">
+    {/* Toggle aligned to the right */}
+    <div className="flex justify-end mb-2">
+      <button
+        onClick={() => setShowInstructions(prev => !prev)}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 transition shadow-md"
+      >
+        {showInstructions ? (
+          <>
+            <EyeOff className="w-4 h-4" /> Hide Guidelines
+          </>
+        ) : (
+          <>
+            <Eye className="w-4 h-4" /> View Guidelines
+          </>
+        )}
+      </button>
     </div>
+
+    {/* Left–Right layout */}
+    <div className="flex flex-col md:flex-row w-full gap-6">
+      {/* Left: Form (flex-1 so it fills remaining space) */}
+      <div className="w-full">
+        <Form
+          fields={round.fields}
+          answers={answers}
+          isLocked={isLocked}
+          onChange={handleChange}
+        />
+      </div>
+
+      {/* Right: Instructions (fixed width on desktop; stacked on mobile) */}
+      {showInstructions && (
+        <div className="w-3/6">
+          <Instructions
+            instruction={round.instruction}
+            uploads={round.uploads}
+          />
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+
+        </motion.main>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-center gap-5 m-6 ml-10">
+          {(currentRoundIndex !== 1) &&
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={submitting}
+              className="flex cursor-pointer items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 transition disabled:opacity-50"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Previous Round
+            </button>
+          }
+
+          {(currentRoundIndex == (rounds.length)) &&
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saving || submitting}
+              className="flex cursor-pointer items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md hover:scale-105 transition disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Submit & View Certificate"}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          }
+
+          {currentRoundIndex < rounds.length &&
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={saving || submitting}
+              className="flex cursor-pointer items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md hover:scale-105 transition disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Submit & Continue"}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          }
+        </div>
+      </div >
+    </div >
   );
+
 }
 
 

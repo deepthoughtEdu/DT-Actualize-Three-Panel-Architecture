@@ -71,7 +71,7 @@ export default function RoundSummaryPage() {
                   {field.answer ? (
                     field.fieldType === "fileUpload" ? (
                       <button
-                        className="p-[7px] my-1 rounded-md px-4 text-white bg-blue-600"
+                        className="cursor-pointer p-[7px] my-1 rounded-md px-4 text-white bg-blue-600"
                         onClick={() => window.open(field.answer, "_blank")}
                       >
                         View Uploaded

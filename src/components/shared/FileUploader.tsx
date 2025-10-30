@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import axios from "axios";
 
 export default function FileUploader({ type }: { type: "image" | "audio" }) {
@@ -25,7 +26,7 @@ export default function FileUploader({ type }: { type: "image" | "audio" }) {
       <input type="file" onChange={handleUpload} accept={type === "image" ? "image/*" : "audio/*"} />
       {url && (
         type === "image" ? (
-          <img src={url} alt="Uploaded" className="mt-2 w-48" />
+          <Image src={url} alt="Uploaded" className="mt-2 w-48" />
         ) : (
           <audio controls className="mt-2">
             <source src={url} type="audio/mpeg" />
