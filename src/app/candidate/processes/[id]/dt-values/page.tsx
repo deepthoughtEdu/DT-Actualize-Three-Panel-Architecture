@@ -50,14 +50,14 @@ export default function Page() {
       <section className="max-w-5xl mx-auto text-center mb-20">
         <h1 className="text-4xl font-bold mb-6">Our Mission and Vision</h1>
         <p className="text-lg italic leading-relaxed mb-6">
-          "DeepThought nurtures Thought Leaders who can extrapolate out of textual
+          {`DeepThought nurtures Thought Leaders who can extrapolate out of textual
           contents into (i) interdisciplinary (ii) cross-functional (iii) real-life
-          problem solving that leads to socio-economic value creation."
+          problem solving that leads to socio-economic value creation.`}
         </p>
         <p className="text-lg italic leading-relaxed">
-          "To lead the world into a heaven of freedom where everyone is a
+          {`To lead the world into a heaven of freedom where everyone is a
           researcher, where decision-making is thought through, where knowledge
-          creators are respected."
+          creators are respected.`}
         </p>
       </section>
 
