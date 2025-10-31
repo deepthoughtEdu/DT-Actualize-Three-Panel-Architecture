@@ -27,7 +27,6 @@ export default function RoundLayout({
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [showLockedModal, setShowLockedModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showPercentage, setShowPercentage] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -72,7 +71,7 @@ export default function RoundLayout({
     };
 
     fetchRounds();
-  }, [pathname]);
+  }, [id, pathname]);
 
   useEffect(() => {
     if (!loading && rounds.length && roundId === rounds[0]._id && !timeline && !localStorage.getItem('selfDefinedTimeline')) {
@@ -80,7 +79,7 @@ export default function RoundLayout({
     } else {
       setTimeline(localStorage.getItem('selfDefinedTimeline'))
     }
-  }, [loading, rounds, roundId]);
+  }, [loading, rounds, roundId, timeline, id]);
 
   const handleRoundClick = (index: number, _id: string) => {
     if (index > unlockedUpTo) {
@@ -136,9 +135,6 @@ export default function RoundLayout({
   const completedRoundsCount = completedRounds.filter(
     (r) => r.status === "submitted"
   ).length;
-
-  const completionPercentage = totalRounds > 0 ? Math.round((completedRoundsCount / totalRounds) * 100) : 0;
-
 
   // Determine if current round is locked
   const isLocked =
