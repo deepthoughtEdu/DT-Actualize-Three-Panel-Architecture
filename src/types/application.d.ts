@@ -14,6 +14,7 @@ export type RoundStatus = "pending" | "in-progress" | "submitted";
 
 export interface RoundProgress {
   roundId: string;
+  timeline?: string;
   answers: RoundAnswer[];
   status: RoundStatus;
   submission?: Submission[];
@@ -26,8 +27,8 @@ export interface Application {
   candidateId: ObjectId;
   processId: ObjectId;
   status: ApplicationStatus;
-  currentRoundIndex: number | null;   // NEW → tracks which round candidate resumes
-   currentRoundTitle: string | null;
+  currentRoundIndex: number | null; // NEW → tracks which round candidate resumes
+  currentRoundTitle: string | null;
   rounds: RoundProgress[];
   createdAt: Date;
 }

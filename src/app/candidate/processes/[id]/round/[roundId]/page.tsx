@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -49,7 +48,6 @@ export default function RoundSubmissionPage() {
       try {
         const token = localStorage.getItem("token");
 
-
         // fetch process
         const res = await fetch(`/api/candidate/processes/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -57,16 +55,13 @@ export default function RoundSubmissionPage() {
         if (!res.ok) throw new Error("Failed to fetch process");
         const process = await res.json();
 
-
         const sortedRounds = [...process.rounds].sort(
           (a: Round, b: Round) => Number(a.order) - Number(b.order)
         );
         setRounds(sortedRounds);
 
-
         const selected = sortedRounds.find((r) => r._id === roundId);
         setRound(selected || null);
-
 
         // fetch application answers
         const appRes = await fetch(`/api/candidate/applications`, {
@@ -95,15 +90,12 @@ export default function RoundSubmissionPage() {
       }
     };
 
-
     if (id && roundId) fetchProcessAndAnswers();
   }, [id, roundId]);
-
 
   // ✅ Autosave handler
   const handleChange = async (fieldId: string, value: string) => {
     setAnswers((prev) => ({ ...prev, [fieldId]: value }));
-
 
     try {
       setSaving(true);
@@ -157,11 +149,11 @@ export default function RoundSubmissionPage() {
       const payload =
         round?.type === "form"
           ? {
-            answers: Object.entries(answers).map(([fieldId, answer]) => ({
-              fieldId,
-              answer,
-            })),
-          }
+              answers: Object.entries(answers).map(([fieldId, answer]) => ({
+                fieldId,
+                answer,
+              })),
+            }
           : {};
 
       const res = await fetch(
@@ -183,7 +175,7 @@ export default function RoundSubmissionPage() {
         const nextRoundId = rounds[currentIndex + 1]._id;
         router.push(`/candidate/processes/${id}/round/${nextRoundId}`);
       } else {
-        router.push(`/candidate/processes/${id}/certificate`)
+        router.push(`/candidate/processes/${id}/whatsapp-group`);
       }
     } catch (err) {
       console.error(err);
@@ -191,7 +183,6 @@ export default function RoundSubmissionPage() {
       setSubmitting(false);
     }
   };
-
 
   // ✅ Back button handler
   const handleBack = () => {
@@ -206,7 +197,6 @@ export default function RoundSubmissionPage() {
       }
     }
   };
-
 
   if (loading) {
     return (
@@ -229,7 +219,6 @@ export default function RoundSubmissionPage() {
   return (
     <div className="h-[calc(100vh-64px)] bg-gradient-to-b from-sky-500 to-blue-900 text-gray-800">
       <div className="container mx-auto py-6 flex flex-col h-full">
-
         {/* ✅ Header (Round heading and description) */}
         <header className="text-center mt-6">
           <motion.main
@@ -238,7 +227,9 @@ export default function RoundSubmissionPage() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="flex-1 flex items-center justify-center"
           >
-            <h1 className="mb-1 text-4xl font-bold text-white drop-shadow-md">{round.title}</h1>
+            <h1 className="mb-1 text-4xl font-bold text-white drop-shadow-md">
+              {round.title}
+            </h1>
           </motion.main>
         </header>
 
@@ -265,57 +256,55 @@ export default function RoundSubmissionPage() {
             />
           )}
 
-{round.type === "hybrid" && (
-  <div className="w-full">
-    {/* Toggle aligned to the right */}
-    <div className="flex justify-end mb-2">
-      <button
-        onClick={() => setShowInstructions(prev => !prev)}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 transition shadow-md"
-      >
-        {showInstructions ? (
-          <>
-            <EyeOff className="w-4 h-4" /> Hide Guidelines
-          </>
-        ) : (
-          <>
-            <Eye className="w-4 h-4" /> View Guidelines
-          </>
-        )}
-      </button>
-    </div>
+          {round.type === "hybrid" && (
+            <div className="w-full">
+              {/* Toggle aligned to the right */}
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => setShowInstructions((prev) => !prev)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 transition shadow-md"
+                >
+                  {showInstructions ? (
+                    <>
+                      <EyeOff className="w-4 h-4" /> Hide Guidelines
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4" /> View Guidelines
+                    </>
+                  )}
+                </button>
+              </div>
 
-    {/* Left–Right layout */}
-    <div className="flex flex-col md:flex-row w-full gap-6">
-      {/* Left: Form (flex-1 so it fills remaining space) */}
-      <div className="w-full">
-        <Form
-          fields={round.fields}
-          answers={answers}
-          isLocked={isLocked}
-          onChange={handleChange}
-        />
-      </div>
+              {/* Left–Right layout */}
+              <div className="flex flex-col md:flex-row w-full gap-6">
+                {/* Left: Form (flex-1 so it fills remaining space) */}
+                <div className="w-full">
+                  <Form
+                    fields={round.fields}
+                    answers={answers}
+                    isLocked={isLocked}
+                    onChange={handleChange}
+                  />
+                </div>
 
-      {/* Right: Instructions (fixed width on desktop; stacked on mobile) */}
-      {showInstructions && (
-        <div className="w-3/6">
-          <Instructions
-            instruction={round.instruction}
-            uploads={round.uploads}
-          />
-        </div>
-      )}
-    </div>
-  </div>
-)}
-
-
+                {/* Right: Instructions (fixed width on desktop; stacked on mobile) */}
+                {showInstructions && (
+                  <div className="w-3/6">
+                    <Instructions
+                      instruction={round.instruction}
+                      uploads={round.uploads}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </motion.main>
 
         {/* Navigation Buttons */}
         <div className="flex justify-center gap-5 m-6 ml-10">
-          {(currentRoundIndex !== 1) &&
+          {currentRoundIndex !== 1 && (
             <button
               type="button"
               onClick={handleBack}
@@ -325,21 +314,21 @@ export default function RoundSubmissionPage() {
               <ArrowLeft className="w-4 h-4" />
               Previous Round
             </button>
-          }
+          )}
 
-          {(currentRoundIndex == (rounds.length)) &&
+          {currentRoundIndex == rounds.length && (
             <button
               type="button"
               onClick={handleSubmit}
               disabled={saving || submitting}
               className="flex cursor-pointer items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md hover:scale-105 transition disabled:opacity-50"
             >
-              {saving ? "Saving..." : "Submit & View Certificate"}
+              {saving ? "Saving..." : "Submit & Group Link"}
               <ArrowRight className="w-4 h-4" />
             </button>
-          }
+          )}
 
-          {currentRoundIndex < rounds.length &&
+          {currentRoundIndex < rounds.length && (
             <button
               type="submit"
               onClick={handleSubmit}
@@ -349,13 +338,9 @@ export default function RoundSubmissionPage() {
               {saving ? "Saving..." : "Submit & Continue"}
               <ArrowRight className="w-4 h-4" />
             </button>
-          }
+          )}
         </div>
-      </div >
-    </div >
+      </div>
+    </div>
   );
-
 }
-
-
-

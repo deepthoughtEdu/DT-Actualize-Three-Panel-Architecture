@@ -4,9 +4,10 @@ import React, { useEffect, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FileCheck2, ArrowLeft, Lock, CircleCheck } from "lucide-react";
+import { MessageCircle, ArrowLeft, Lock, CircleCheck } from "lucide-react";
 import TimerModal from "@/components/candidate/TimeModal";
-import { IsLockedProvider, CertificateUnlockedProvider } from "./Context";
+import { IsLockedProvider, WhatsAppGroupProvider } from "./Context";
+// import { IsLockedProvider, CertificateUnlockedProvider } from "./Context";
 
 interface Round {
   _id: string;
@@ -22,7 +23,9 @@ export default function RoundLayout({
 }) {
   const { id, roundId } = useParams<{ id: string; roundId: string }>();
   const [rounds, setRounds] = useState<Round[]>([]);
-  const [completedRounds, setCompletedRounds] = useState<{ roundId: string; status: string }[]>([]);
+  const [completedRounds, setCompletedRounds] = useState<
+    { roundId: string; status: string }[]
+  >([]);
   const [timeline, setTimeline] = useState<any>(null);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [showLockedModal, setShowLockedModal] = useState(false);
@@ -30,6 +33,10 @@ export default function RoundLayout({
 
   const router = useRouter();
   const pathname = usePathname();
+
+  // 🔗 WhatsApp Group Configuration
+  const WHATSAPP_GROUP_LINK =
+    "https://chat.whatsapp.com/BNHIpkOWCWG3jCx3Hf9RW6"; // Replace with your actual link
 
   useEffect(() => {
     const fetchRounds = async () => {
@@ -56,10 +63,14 @@ export default function RoundLayout({
 
         if (currentApp) {
           const completed = currentApp.rounds
-            .filter((r: any) => r.status === "submitted" || r.status === "in-progress" || r.completed)
+            .filter(
+              (r: any) =>
+                r.status === "submitted" ||
+                r.status === "in-progress" ||
+                r.completed
+            )
             .map((r: any) => ({ roundId: r.roundId, status: r.status }));
           setCompletedRounds(completed);
-
 
           if (currentApp.timeline) setTimeline(currentApp.timeline);
         }
@@ -74,10 +85,16 @@ export default function RoundLayout({
   }, [id, pathname]);
 
   useEffect(() => {
-    if (!loading && rounds.length && roundId === rounds[0]._id && !timeline && !localStorage.getItem('selfDefinedTimeline')) {
+    if (
+      !loading &&
+      rounds.length &&
+      roundId === rounds[0]._id &&
+      !timeline &&
+      !localStorage.getItem("selfDefinedTimeline")
+    ) {
       setShowTimelineModal(true);
     } else {
-      setTimeline(localStorage.getItem('selfDefinedTimeline'))
+      setTimeline(localStorage.getItem("selfDefinedTimeline"));
     }
   }, [loading, rounds, roundId, timeline, id]);
 
@@ -92,13 +109,12 @@ export default function RoundLayout({
   const handleBackToProcess = () => {
     const latestUnlockedIndex = Math.min(unlockedUpTo, rounds.length - 1);
     const latestUnlockedRound = rounds[latestUnlockedIndex];
-    if (latestUnlockedRound)
-      router.push(`/candidate/processes/${id}/round/${latestUnlockedRound._id}`);
+    if (latestUnlockedRound) router.push(`/candidate/processes`);
   };
 
   const saveTimeline = async (data: string) => {
     const token = localStorage.getItem("token");
-    await fetch(`/api/candidate/applications/${id}/timeline`, {
+    await fetch(`/api/candidate/applications/${id}/round/${roundId}/timeline`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -106,7 +122,7 @@ export default function RoundLayout({
       },
       body: JSON.stringify({ timeline: data }),
     });
-    localStorage.setItem('selfDefinedTimeline', data);
+    localStorage.setItem("selfDefinedTimeline", data);
     setTimeline(data);
     setShowTimelineModal(false);
   };
@@ -117,19 +133,29 @@ export default function RoundLayout({
   )?.status;
   console.log(currentRoundStatus);
 
-  // ✅ Determine visible rounds (can’t see next rounds)
+  // ✅ Determine visible rounds (can't see next rounds)
   const currentIndex = rounds.findIndex((r) => r._id === roundId);
   const unlockedUpTo = Math.max(completedRounds.length - 1, currentIndex);
 
-  let isCertificateUnlocked = false;
+  // 🔗 Check if WhatsApp group is unlocked (all rounds submitted)
+  let isWhatsAppGroupUnlocked = false;
   if (completedRounds.length === rounds.length) {
-    // find the last round in sorted order
     const lastRound = rounds[rounds.length - 1];
     const lastRoundStatus = completedRounds.find(
       (r) => r.roundId === lastRound._id
     )?.status;
-    isCertificateUnlocked = lastRoundStatus === "submitted";
+    isWhatsAppGroupUnlocked = lastRoundStatus === "submitted";
   }
+
+  // 📜 COMMENTED OUT: Certificate unlock logic
+  // let isCertificateUnlocked = false;
+  // if (completedRounds.length === rounds.length) {
+  //   const lastRound = rounds[rounds.length - 1];
+  //   const lastRoundStatus = completedRounds.find(
+  //     (r) => r.roundId === lastRound._id
+  //   )?.status;
+  //   isCertificateUnlocked = lastRoundStatus === "submitted";
+  // }
 
   const totalRounds = rounds.length;
   const completedRoundsCount = completedRounds.filter(
@@ -138,8 +164,7 @@ export default function RoundLayout({
 
   // Determine if current round is locked
   const isLocked =
-    currentIndex < unlockedUpTo ||
-    currentRoundStatus === "submitted"
+    currentIndex < unlockedUpTo || currentRoundStatus === "submitted";
 
   if (loading) {
     return (
@@ -173,21 +198,10 @@ export default function RoundLayout({
           {/* 🧩 Round Progression */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-blue-800">Your Progress</h2>
-            <div
-              className="text-md font-bold text-green-700 transition mr-1"
-            >
+            <div className="text-md font-bold text-green-700 transition mr-1">
               {completedRoundsCount} / {totalRounds}
             </div>
-            {/* <button
-              onClick={() => setShowPercentage((prev) => !prev)}
-              className="text-md font-bold cursor-pointer text-green-700 transition mr-1"
-            >
-              {showPercentage
-                ? `${completionPercentage}%`
-                : `${completedRoundsCount} / ${totalRounds}`}
-            </button> */}
           </div>
-
 
           <div className="h-[68vh] space-y-2 overflow-x-auto">
             {rounds.map((round, index) => {
@@ -206,13 +220,18 @@ export default function RoundLayout({
                   {index <= unlockedUpTo ? (
                     <button
                       onClick={() => handleRoundClick(index, round._id)}
-                      className={`cursor-pointer w-full flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition ${isActive
-                        ? "bg-blue-100 text-blue-800"
-                        : "hover:bg-blue-50 text-gray-700"
-                        }`}
+                      className={`cursor-pointer w-full flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition ${
+                        isActive
+                          ? "bg-blue-100 text-blue-800"
+                          : "hover:bg-blue-50 text-gray-700"
+                      }`}
                     >
                       <span>{round.title}</span>
-                      <span>{isCompleted && <CircleCheck className="w-4 h-4 text-green-600" />}</span>
+                      <span>
+                        {isCompleted && (
+                          <CircleCheck className="w-4 h-4 text-green-600" />
+                        )}
+                      </span>
                     </button>
                   ) : (
                     <button
@@ -220,27 +239,53 @@ export default function RoundLayout({
                       className="w-full flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed"
                     >
                       <span>{round.title}</span>
-                      <span><Lock className="w-4 h-4" /></span>
+                      <span>
+                        <Lock className="w-4 h-4" />
+                      </span>
                     </button>
                   )}
-
                 </motion.div>
               );
             })}
 
-            {/* Certificate tab */}
             <div className="mt-3 border-t pt-3">
+              {isWhatsAppGroupUnlocked ? (
+                <Link
+                  href={`/candidate/processes/${id}/whatsapp-group`}
+                  className={`flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    pathname.includes("whatsapp-group")
+                      ? "bg-green-100 text-green-700"
+                      : "hover:bg-green-50 text-gray-700"
+                  }`}
+                >
+                  <span>WhatsApp Group</span>
+                  <MessageCircle className="w-4 h-4" />
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setShowLockedModal(true)}
+                  className="w-full flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed"
+                >
+                  <span>WhatsApp Group</span>
+                  <Lock className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* 📜 COMMENTED OUT: Certificate Link */}
+            {/* <div className="mt-3 border-t pt-3">
               <Link
                 href={`/candidate/processes/${id}/certificate`}
-                className={`flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition ${pathname.includes("certificate")
-                  ? "bg-green-100 text-green-700"
-                  : "hover:bg-green-50 text-gray-700"
-                  }`}
+                className={`flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  pathname.includes("certificate")
+                    ? "bg-green-100 text-green-700"
+                    : "hover:bg-green-50 text-gray-700"
+                }`}
               >
                 <span>Certificate</span>
                 <FileCheck2 className="w-4 h-4" />
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -259,9 +304,17 @@ export default function RoundLayout({
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <IsLockedProvider value={isLocked}>
-          <CertificateUnlockedProvider value={isCertificateUnlocked}>
+          <WhatsAppGroupProvider
+            isUnlocked={isWhatsAppGroupUnlocked}
+            groupLink={WHATSAPP_GROUP_LINK}
+          >
             {children}
-          </CertificateUnlockedProvider>
+          </WhatsAppGroupProvider>
+
+          {/* 📜 COMMENTED OUT: Certificate Provider */}
+          {/* <CertificateUnlockedProvider value={isCertificateUnlocked}>
+            {children}
+          </CertificateUnlockedProvider> */}
         </IsLockedProvider>
       </main>
 

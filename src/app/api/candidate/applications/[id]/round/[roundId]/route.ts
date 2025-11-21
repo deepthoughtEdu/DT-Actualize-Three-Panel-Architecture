@@ -10,10 +10,12 @@ export async function POST(req: NextRequest, context: any) {
 
     // ✅ Auth check
     const authHeader = req.headers.get("authorization");
-    if (!authHeader) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!authHeader)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const token = authHeader.split(" ")[1];
     const payload = verifyToken<{ id: string }>(token);
-    if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!payload)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const appId = new ObjectId(id);
     const candidateId = new ObjectId(payload.id);
@@ -27,11 +29,18 @@ export async function POST(req: NextRequest, context: any) {
       processId: appId,
       candidateId: candidateId,
     });
-    if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
+    if (!app)
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 }
+      );
 
     // ✅ Fetch process to get round order
-    const process = await db.collection("processes").findOne({ _id: app.processId });
-    if (!process) return NextResponse.json({ error: "Process not found" }, { status: 404 });
+    const process = await db
+      .collection("processes")
+      .findOne({ _id: app.processId });
+    if (!process)
+      return NextResponse.json({ error: "Process not found" }, { status: 404 });
 
     // Check if current round exists
     const roundExists = app.rounds.some((r: any) => r.roundId === roundId);
@@ -47,7 +56,11 @@ export async function POST(req: NextRequest, context: any) {
       }
 
       await db.collection("applications").updateOne(
-        { processId: appId, candidateId: candidateId, "rounds.roundId": roundId },
+        {
+          processId: appId,
+          candidateId: candidateId,
+          "rounds.roundId": roundId,
+        },
         { $set: updateFields }
       );
     } else {
@@ -55,16 +68,19 @@ export async function POST(req: NextRequest, context: any) {
       const roundData: any = {
         roundId,
         status: "submitted",
-        answers: answers?.map((a: any) => ({
-          fieldId: new ObjectId(a.fieldId),
-          answer: a.answer,
-        })) || [],
+        answers:
+          answers?.map((a: any) => ({
+            fieldId: new ObjectId(a.fieldId),
+            answer: a.answer,
+          })) || [],
       };
 
-      await db.collection("applications").updateOne(
-        { processId: appId, candidateId: candidateId },
-        { $push: { rounds: roundData } }
-      );
+      await db
+        .collection("applications")
+        .updateOne(
+          { processId: appId, candidateId: candidateId },
+          { $push: { rounds: roundData } }
+        );
     }
 
     // Reload updated application
@@ -72,10 +88,16 @@ export async function POST(req: NextRequest, context: any) {
       processId: appId,
       candidateId: candidateId,
     });
-    if (!updatedApp) return NextResponse.json({ error: "Failed to reload application" }, { status: 500 });
+    if (!updatedApp)
+      return NextResponse.json(
+        { error: "Failed to reload application" },
+        { status: 500 }
+      );
 
     // ✅ Map roundId → status
-    const roundStatusMap = new Map(updatedApp.rounds.map((r: any) => [r.roundId, r.status]));
+    const roundStatusMap = new Map(
+      updatedApp.rounds.map((r: any) => [r.roundId, r.status])
+    );
 
     // ✅ Count submitted rounds
     const submittedRoundsCount = process.rounds.filter(
@@ -86,7 +108,13 @@ export async function POST(req: NextRequest, context: any) {
     if (submittedRoundsCount === process.rounds.length) {
       await db.collection("applications").updateOne(
         { processId: appId, candidateId: candidateId },
-        { $set: { status: "completed", currentRoundIndex: null, currentRoundTitle: null } }
+        {
+          $set: {
+            status: "completed",
+            currentRoundIndex: null,
+            currentRoundTitle: null,
+          },
+        }
       );
       return NextResponse.json({ success: true, nextRoundIndex: null });
     }
@@ -98,17 +126,29 @@ export async function POST(req: NextRequest, context: any) {
     });
 
     if (nextRoundInProcessOrder) {
-      const nextAppRound = updatedApp.rounds.find((r: any) => r.roundId === nextRoundInProcessOrder._id);
+      const nextAppRound = updatedApp.rounds.find(
+        (r: any) => r.roundId === nextRoundInProcessOrder._id
+      );
 
       // ✅ Only update to 'in-progress' if not submitted already
-      if (nextAppRound && nextAppRound.status !== "submitted" && nextAppRound.status !== "in-progress") {
+      if (
+        nextAppRound &&
+        nextAppRound.status !== "submitted" &&
+        nextAppRound.status !== "in-progress"
+      ) {
         await db.collection("applications").updateOne(
-          { processId: appId, candidateId: candidateId, "rounds.roundId": nextAppRound.roundId },
+          {
+            processId: appId,
+            candidateId: candidateId,
+            "rounds.roundId": nextAppRound.roundId,
+          },
           { $set: { "rounds.$.status": "in-progress" } }
         );
       }
 
-      const nextIndex = process.rounds.findIndex((r: any) => r._id === nextRoundInProcessOrder._id);
+      const nextIndex = process.rounds.findIndex(
+        (r: any) => r._id === nextRoundInProcessOrder._id
+      );
 
       await db.collection("applications").updateOne(
         { processId: appId, candidateId: candidateId },
@@ -116,7 +156,10 @@ export async function POST(req: NextRequest, context: any) {
           $set: {
             currentRoundIndex: nextIndex,
             currentRoundTitle: nextRoundInProcessOrder.title,
-            status: updatedApp.status === "applied" ? "in-progress" : updatedApp.status,
+            status:
+              updatedApp.status === "applied"
+                ? "in-progress"
+                : updatedApp.status,
           },
         }
       );
@@ -128,16 +171,16 @@ export async function POST(req: NextRequest, context: any) {
     return NextResponse.json({ success: true, nextRoundIndex: null });
   } catch (err) {
     console.error("Submit round error:", err);
-    return NextResponse.json({ error: "Failed to submit round" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to submit round" },
+      { status: 500 }
+    );
   }
 }
 /**
  * Autosave round (keep answers, but not submit)
  */
-export async function PATCH(
-  req: NextRequest,
-  context: any
-) {
+export async function PATCH(req: NextRequest, context: any) {
   try {
     const params = await context.params;
 
@@ -160,14 +203,19 @@ export async function PATCH(
     const db = await connectDB();
 
     // 🔹 Get current application
-    const application = await db.collection<Application>("applications").findOne({
-      processId: appId,
-      candidateId,
-      "rounds.roundId": roundId,
-    });
+    const application = await db
+      .collection<Application>("applications")
+      .findOne({
+        processId: appId,
+        candidateId,
+        "rounds.roundId": roundId,
+      });
 
     if (!application) {
-      return NextResponse.json({ error: "Application not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 }
+      );
     }
 
     // 🔹 Find the round
@@ -182,7 +230,10 @@ export async function PATCH(
     // 🔹 Merge logic (replace if exists, otherwise keep old + add new)
     const mergedAnswers = [
       ...existingAnswers.filter(
-        (ea) => !answers.some((na: { fieldId: string }) => na.fieldId === ea.fieldId.toString())
+        (ea) =>
+          !answers.some(
+            (na: { fieldId: string }) => na.fieldId === ea.fieldId.toString()
+          )
       ),
       ...answers.map((a: { fieldId: string; answer: any }) => ({
         fieldId: new ObjectId(a.fieldId),
@@ -218,4 +269,3 @@ export async function PATCH(
     );
   }
 }
-

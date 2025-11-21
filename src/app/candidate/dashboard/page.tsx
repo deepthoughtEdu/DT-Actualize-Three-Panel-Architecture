@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ApplicationCard, ApplicationData } from "@/components/candidate/ApplicationCard";
+import {
+  ApplicationCard,
+  ApplicationData,
+} from "@/components/candidate/ApplicationCard";
 import { DashboardHeader } from "@/components/candidate/DashboardHeader";
 import { BrowseSection } from "@/components/candidate/BrowseSection";
+import { OnboardingVideo } from "@/components/candidate/OnboardingVideo";
 
 interface RoundProgress {
   roundId: string;
@@ -26,6 +30,15 @@ interface Application {
 export default function CandidateDashboard() {
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    // Check if user has seen onboarding
+    const hasSeenOnboarding = localStorage.getItem("hasSeenOnboarding");
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -54,7 +67,7 @@ export default function CandidateDashboard() {
                 // If this is the current round, mark it as "continue"
                 roundStatus =
                   app.currentRoundIndex !== null &&
-                    app.currentRoundIndex === idx
+                  app.currentRoundIndex === idx
                     ? "continue"
                     : "in-progress";
               } else if (round.status === "pending") {
@@ -95,15 +108,23 @@ export default function CandidateDashboard() {
 
   if (applications.length === 0) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center text-center">
-        <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-          No Applications Found
-        </h2>
-        <p className="text-gray-600 mb-6">
-          You haven’t applied to any process yet. Explore opportunities!
-        </p>
-        <BrowseSection applications={applications} />
-      </div>
+      <>
+        {showOnboarding && (
+          <OnboardingVideo
+            videoId="WNwkhFi6JFs"
+            onComplete={() => setShowOnboarding(false)}
+          />
+        )}
+        <div className="flex h-screen flex-col items-center justify-center text-center">
+          <h2 className="mb-2 text-2xl font-semibold text-gray-800">
+            No Applications Found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            You haven’t applied to any process yet. Explore opportunities!
+          </p>
+          <BrowseSection applications={applications} />
+        </div>
+      </>
     );
   }
 
