@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Ban, Clock, AlertCircle, RefreshCw } from "lucide-react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 export default function CandidateAuthPage() {
   const router = useRouter();
@@ -97,10 +97,8 @@ export default function CandidateAuthPage() {
         {blockInfo && (
           <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-xl p-5 mb-6">
             <div className="flex items-start gap-3">
-              <Ban className="w-6 h-6 text-orange-600 mt-1 flex-shrink-0" />
               <div className="flex-1">
                 <h3 className="font-bold text-orange-900 text-base mb-2 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
                   Account Temporarily Blocked
                 </h3>
                 <p className="text-orange-800 text-sm mb-3 leading-relaxed">
@@ -110,13 +108,11 @@ export default function CandidateAuthPage() {
                 <div className="bg-white rounded-lg p-3 mb-3 border border-orange-200">
                   <div className="space-y-2">
                     <div className="flex items-start gap-2 text-orange-700">
-                      <div className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 flex-shrink-0"></div>
                       <p className="text-xs">
                         <strong>Reason:</strong> {blockInfo.reason}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 text-orange-700">
-                      <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                       <p className="text-xs">
                         <strong>Time remaining:</strong>{" "}
                         <span className="font-mono font-bold">
