@@ -9,65 +9,121 @@ import { verifyPassword } from "@/utils/hash";
 
 export class CandidateService {
   // 🔹 Register candidate
- static async register(name: string, email: string, password: string) {
-  const db = await connectDB();
-  const existing = await db.collection("candidates").findOne({ email });
-  if (existing) throw new Error("Email already registered");
+  static async register(name: string, email: string, password: string) {
+    const db = await connectDB();
+    const existing = await db.collection("candidates").findOne({ email });
+    if (existing) throw new Error("Email already registered");
 
-  const hashed = await bcrypt.hash(password, 10);
-  const result = await db.collection("candidates").insertOne({
-    name,
-    email,
-    passwordHash: hashed,   // ✅ use consistent field name
-    createdAt: new Date(),
-    role: "candidate",
-  });
+    const hashed = await bcrypt.hash(password, 10);
+    const result = await db.collection("candidates").insertOne({
+      name,
+      email,
+      passwordHash: hashed,
+      createdAt: new Date(),
+      role: "candidate",
+    });
 
-  const candidateId = result.insertedId.toString();
+    const candidateId = result.insertedId.toString();
 
-  const token = generateToken({
-    id: candidateId,       // ✅ JWT will now carry the real candidate._id
-    email,
-    role: "candidate",
-  });
+    const token = generateToken({
+      id: candidateId,
+      email,
+      role: "candidate",
+    });
 
-  return { token, candidateId };
-}
-
+    return { token, candidateId };
+  }
 
   // 🔹 Login candidate
   static async login(email: string, password: string) {
-  const db = await connectDB();
-  const candidate = await db.collection("candidates").findOne({ email });
-  if (!candidate) throw new Error("Invalid credentials");
+    const db = await connectDB();
+    const candidate = await db.collection("candidates").findOne({ email });
+    if (!candidate) throw new Error("Invalid credentials");
 
-  console.log(candidate.password);
-  
-  // ✅ compare with passwordHash (not password)
-  const valid = await verifyPassword(password, candidate.password);
-  
-  if (!valid) throw new Error("Invalid credentials");
+    // ✅ CHECK IF CANDIDATE IS BLOCKED
+    if (candidate.isBlocked) {
+      const now = new Date();
+      const blockedUntil = new Date(candidate.blockedUntil);
 
-  const candidateId = candidate._id.toString();
+      // Check if block period has expired
+      if (blockedUntil > now) {
+        // Still blocked - calculate remaining time
+        const timeRemaining = blockedUntil.getTime() - now.getTime();
+        const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+        const minutesRemaining = Math.floor(
+          (timeRemaining % (1000 * 60 * 60)) / (1000 * 60)
+        );
 
-  const token = generateToken({
-    id: candidateId,          // ✅ correct candidate._id in JWT
-    email: candidate.email,
-    role: "candidate",
-  });
-  console.log(token,` :`, candidateId);
-  
+        // Throw error with block info
+        const error: any = new Error("account_blocked");
+        error.code = "ACCOUNT_BLOCKED";
+        error.details = {
+          message: `Your account is temporarily blocked because you missed your self-defined timeline deadline.`,
+          reason: candidate.blockedReason || "Missed timeline deadline",
+          blockedUntil: blockedUntil.toISOString(),
+          timeRemaining: {
+            hours: hoursRemaining,
+            minutes: minutesRemaining,
+          },
+        };
+        throw error;
+      } else {
+        // ✅ Block period expired - auto unblock
+        await db.collection("candidates").updateOne(
+          { _id: candidate._id },
+          {
+            $set: { isBlocked: false },
+            $unset: {
+              blockedReason: "",
+              blockedAt: "",
+              blockedUntil: "",
+              blockedBy: "",
+            },
+          }
+        );
 
-  return { token, candidateId };
-}
+        // Unblock their applications
+        await db.collection("applications").updateMany(
+          { candidateId: candidate._id, status: "blocked" },
+          {
+            $set: { status: "in-progress" },
+            $unset: {
+              blockedAt: "",
+              blockedUntil: "",
+            },
+          }
+        );
+      }
+    }
 
+    console.log(candidate.password);
+
+    // ✅ compare with passwordHash (not password)
+    const valid = await verifyPassword(password, candidate.password);
+
+    if (!valid) throw new Error("Invalid credentials");
+
+    const candidateId = candidate._id.toString();
+
+    const token = generateToken({
+      id: candidateId,
+      email: candidate.email,
+      role: "candidate",
+    });
+    console.log(token, ` :`, candidateId);
+
+    return { token, candidateId };
+  }
 
   // 🔹 Get candidate profile
   static async getProfile(candidateId: string) {
     const db = await connectDB();
     const candidate = await db
       .collection("candidates")
-      .findOne({ _id: new ObjectId(candidateId) }, { projection: { password: 0 } });
+      .findOne(
+        { _id: new ObjectId(candidateId) },
+        { projection: { password: 0 } }
+      );
 
     if (!candidate) throw new Error("Candidate not found");
     return candidate as unknown as Candidate;
@@ -96,46 +152,53 @@ export class CandidateService {
     return process as Process;
   }
 
-// 🔹 Apply to a process
-static async applyToProcess(candidateId: ObjectId, processId: ObjectId) {
-  const db = await connectDB();
+  // 🔹 Apply to a process
+  static async applyToProcess(candidateId: ObjectId, processId: ObjectId) {
+    const db = await connectDB();
 
-  const existing = await db.collection("applications").findOne({
-    candidateId: new ObjectId(candidateId),
-    processId: new ObjectId(processId),
-  });
+    const existing = await db.collection("applications").findOne({
+      candidateId: new ObjectId(candidateId),
+      processId: new ObjectId(processId),
+    });
 
-  if (existing) throw new Error("Already applied to this process");
+    if (existing) throw new Error("Already applied to this process");
 
-  // 🔹 Fetch process definition to get its rounds
-  const process = await db.collection("processes").findOne({ _id: new ObjectId(processId) });
-  if (!process) throw new Error("Process not found");
+    // 🔹 Fetch process definition to get its rounds
+    const process = await db
+      .collection("processes")
+      .findOne({ _id: new ObjectId(processId) });
+    if (!process) throw new Error("Process not found");
 
-  // 🔹 Map process.rounds to application.rounds with initial statuses
-  const rounds = (process.rounds || []).map((r: any, idx: number) => ({
-    roundId: r._id,
-    status: idx === 0 ? "in-progress" : "pending", // first round is active
-    answers: [],
-    submission: [],
-  }));
+    // 🔹 Map process.rounds to application.rounds with initial statuses
+    const rounds = (process.rounds || []).map((r: any, idx: number) => ({
+      roundId: r._id,
+      status: idx === 0 ? "in-progress" : "pending",
+      answers: [],
+      submission: [],
+    }));
 
-  const application: Application = {
-    candidateId: new ObjectId(candidateId),
-    processId: new ObjectId(processId),
-    status: "applied",          // already started
-    currentRoundIndex: 0, 
-     currentRoundTitle:process.rounds[0].title,         // first round index
-    createdAt: new Date(),
-    rounds,
-  };
+    const application: Application = {
+      candidateId: new ObjectId(candidateId),
+      processId: new ObjectId(processId),
+      status: "applied",
+      currentRoundIndex: 0,
+      currentRoundTitle: process.rounds[0].title,
+      createdAt: new Date(),
+      rounds,
+    };
 
-  const result = await db.collection("applications").insertOne(application);
+    const result = await db.collection("applications").insertOne(application);
 
-  return { applicationId: result.insertedId.toString() };
-}
+    return { applicationId: result.insertedId.toString() };
+  }
 
   // 🔹 Submit answers for a round
-  static async submitRound(candidateId: string, applicationId: string, roundId: string, answers: any) {
+  static async submitRound(
+    candidateId: string,
+    applicationId: string,
+    roundId: string,
+    answers: any
+  ) {
     const db = await connectDB();
 
     const application = await db.collection("applications").findOne({
