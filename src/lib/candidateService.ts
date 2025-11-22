@@ -96,8 +96,6 @@ export class CandidateService {
       }
     }
 
-    console.log(candidate.password);
-
     // ✅ compare with passwordHash (not password)
     const valid = await verifyPassword(password, candidate.password);
 

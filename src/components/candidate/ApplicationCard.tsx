@@ -28,6 +28,7 @@ const statusConfig = {
   applied: { variant: "applied" as const, text: "Applied" },
   "in-progress": { variant: "in-progress" as const, text: "In Progress" },
   completed: { variant: "completed" as const, text: "Completed" },
+  unknown: { variant: "default" as const, text: "Unknown" },
 };
 
 const roundStatusIcons = {
@@ -58,8 +59,8 @@ export const ApplicationCard = ({ application }: ApplicationCardProps) => {
       <Card className="h-full bg-gradient-card shadow-card hover:shadow-card-hover transition-all duration-300 border-[2px]">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
-            <Badge variant={statusInfo.variant} className="mb-2">
-              {statusInfo.text}
+            <Badge variant={statusInfo?.variant} className="mb-2">
+              {statusInfo?.text}
             </Badge>
             {/* <Button
               variant="ghost"
@@ -80,14 +81,17 @@ export const ApplicationCard = ({ application }: ApplicationCardProps) => {
         <CardContent className="pt-0">
           <div className="space-y-3">
             <div>
-              <h4 className="text-sm font-medium text-foreground mb-2">Rounds</h4>
+              <h4 className="text-sm font-medium text-foreground mb-2">
+                Rounds
+              </h4>
               <div className="space-y-2">
                 {application.rounds.map((round, index) => {
                   const Icon = roundStatusIcons[round.status];
 
                   // 👇 Only "continue" & "in-progress" are actionable
                   const isActionable =
-                    round.status === "continue" || round.status === "in-progress";
+                    round.status === "continue" ||
+                    round.status === "in-progress";
 
                   return (
                     <div
@@ -96,14 +100,15 @@ export const ApplicationCard = ({ application }: ApplicationCardProps) => {
                     >
                       <div className="flex items-center space-x-2">
                         <Icon
-                          className={`w-4 h-4 ${round.status === "completed" ||
-                              round.status === "submitted"
+                          className={`w-4 h-4 ${
+                            round.status === "completed" ||
+                            round.status === "submitted"
                               ? "text-completed"
                               : round.status === "in-progress" ||
                                 round.status === "continue"
-                                ? "text-in-progress"
-                                : "text-muted-foreground"
-                            }`}
+                              ? "text-in-progress"
+                              : "text-muted-foreground"
+                          }`}
                         />
                         <span className="text-sm text-foreground">
                           {round.name}

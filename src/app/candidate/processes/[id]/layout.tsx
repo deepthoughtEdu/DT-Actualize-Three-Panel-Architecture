@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { MessageCircle, ArrowLeft, Lock, CircleCheck } from "lucide-react";
 import TimerModal from "@/components/candidate/TimeModal";
 import { IsLockedProvider, WhatsAppGroupProvider } from "./Context";
-// import { IsLockedProvider, CertificateUnlockedProvider } from "./Context";
 
 interface Round {
   _id: string;
@@ -26,39 +25,40 @@ export default function RoundLayout({
   const [completedRounds, setCompletedRounds] = useState<
     { roundId: string; status: string }[]
   >([]);
-  const [timeline, setTimeline] = useState<any>(null);
+  // Per-round timeline map
+  const [roundTimelines, setRoundTimelines] = useState<
+    Record<string, string | null>
+  >({});
+  const [timeline, setTimeline] = useState<string | null>(null);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [showLockedModal, setShowLockedModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [whatsAppGroupLink, setWhatsAppGroupLink] = useState<string | null>(
+    null
+  );
+  const [isWhatsAppGroupUnlocked, setIsWhatsAppGroupUnlocked] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
 
-  // 🔗 WhatsApp Group Configuration
-  const WHATSAPP_GROUP_LINK =
-    "https://chat.whatsapp.com/BNHIpkOWCWG3jCx3Hf9RW6"; // Replace with your actual link
-
   useEffect(() => {
-    const fetchRounds = async () => {
+    const fetchRoundsAndTimeline = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        // ✅ Fetch process and sort rounds
-        const res = await fetch(`/api/candidate/processes/${id}`, {
+        // Fetch process and rounds
+        const resProcess = await fetch(`/api/candidate/processes/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const process = await res.json();
-        const sortedRounds = [...process.rounds].sort(
-          (a: Round, b: Round) => a.order - b.order
-        );
-        setRounds(sortedRounds);
+        const process = await resProcess.json();
+        setRounds(process.rounds.sort((a: any, b: any) => a.order - b.order));
 
-        // ✅ Fetch completed round + timeline data
-        const appRes = await fetch(`/api/candidate/applications`, {
+        // Fetch applications for candidate
+        const resApps = await fetch(`/api/candidate/applications`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const apps = await appRes.json();
+        const apps = await resApps.json();
         const currentApp = apps.find((a: any) => a.process._id === id);
 
         if (currentApp) {
@@ -72,7 +72,41 @@ export default function RoundLayout({
             .map((r: any) => ({ roundId: r.roundId, status: r.status }));
           setCompletedRounds(completed);
 
-          if (currentApp.timeline) setTimeline(currentApp.timeline);
+          // Build timeline map
+          const timelinesMap: Record<string, string | null> = {};
+          currentApp.rounds.forEach((r: any) => {
+            timelinesMap[r.roundId] = r.timeline || null;
+          });
+          setRoundTimelines(timelinesMap);
+
+          // Set timeline of current round if available
+          setTimeline(timelinesMap[roundId] || null);
+
+          // WhatsApp Group Link fetch only if all rounds completed
+          if (
+            currentApp.rounds.length === process.rounds.length &&
+            currentApp.rounds.every(
+              (r: any) => r.status === "submitted" || r.status === "completed"
+            )
+          ) {
+            const resGroupLink = await fetch(
+              `/api/candidate/applications/${currentApp._id}/whatsapp-link`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            if (resGroupLink.ok) {
+              const data = await resGroupLink.json();
+              setWhatsAppGroupLink(data.groupLink || null);
+              setIsWhatsAppGroupUnlocked(true);
+            } else {
+              setWhatsAppGroupLink(null);
+              setIsWhatsAppGroupUnlocked(false);
+            }
+          } else {
+            setWhatsAppGroupLink(null);
+            setIsWhatsAppGroupUnlocked(false);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -81,20 +115,15 @@ export default function RoundLayout({
       }
     };
 
-    fetchRounds();
-  }, [id, pathname]);
+    fetchRoundsAndTimeline();
+  }, [id, roundId, pathname]);
 
+  // Show timeline modal if timeline for current round is empty
   useEffect(() => {
-    if (
-      !loading &&
-      rounds.length &&
-      roundId === rounds[0]._id &&
-      !timeline &&
-      !localStorage.getItem("selfDefinedTimeline")
-    ) {
+    if (!loading && rounds.length && !timeline) {
       setShowTimelineModal(true);
     } else {
-      setTimeline(localStorage.getItem("selfDefinedTimeline"));
+      setShowTimelineModal(false);
     }
   }, [loading, rounds, roundId, timeline, id]);
 
@@ -112,6 +141,7 @@ export default function RoundLayout({
     if (latestUnlockedRound) router.push(`/candidate/processes`);
   };
 
+  // Save timeline for specific round and update state map
   const saveTimeline = async (data: string) => {
     const token = localStorage.getItem("token");
     await fetch(`/api/candidate/applications/${id}/round/${roundId}/timeline`, {
@@ -122,47 +152,27 @@ export default function RoundLayout({
       },
       body: JSON.stringify({ timeline: data }),
     });
-    localStorage.setItem("selfDefinedTimeline", data);
+
+    setRoundTimelines((prev) => ({
+      ...prev,
+      [roundId]: data,
+    }));
     setTimeline(data);
     setShowTimelineModal(false);
   };
 
-  // Find the current round status
   const currentRoundStatus = completedRounds.find(
     (r) => r.roundId === roundId
   )?.status;
-  console.log(currentRoundStatus);
 
-  // ✅ Determine visible rounds (can't see next rounds)
   const currentIndex = rounds.findIndex((r) => r._id === roundId);
   const unlockedUpTo = Math.max(completedRounds.length - 1, currentIndex);
-
-  // 🔗 Check if WhatsApp group is unlocked (all rounds submitted)
-  let isWhatsAppGroupUnlocked = false;
-  if (completedRounds.length === rounds.length) {
-    const lastRound = rounds[rounds.length - 1];
-    const lastRoundStatus = completedRounds.find(
-      (r) => r.roundId === lastRound._id
-    )?.status;
-    isWhatsAppGroupUnlocked = lastRoundStatus === "submitted";
-  }
-
-  // 📜 COMMENTED OUT: Certificate unlock logic
-  // let isCertificateUnlocked = false;
-  // if (completedRounds.length === rounds.length) {
-  //   const lastRound = rounds[rounds.length - 1];
-  //   const lastRoundStatus = completedRounds.find(
-  //     (r) => r.roundId === lastRound._id
-  //   )?.status;
-  //   isCertificateUnlocked = lastRoundStatus === "submitted";
-  // }
 
   const totalRounds = rounds.length;
   const completedRoundsCount = completedRounds.filter(
     (r) => r.status === "submitted"
   ).length;
 
-  // Determine if current round is locked
   const isLocked =
     currentIndex < unlockedUpTo || currentRoundStatus === "submitted";
 
@@ -249,14 +259,16 @@ export default function RoundLayout({
             })}
 
             <div className="mt-3 border-t pt-3">
-              {isWhatsAppGroupUnlocked ? (
+              {isWhatsAppGroupUnlocked && whatsAppGroupLink ? (
                 <Link
-                  href={`/candidate/processes/${id}/whatsapp-group`}
+                  href={whatsAppGroupLink}
                   className={`flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition ${
                     pathname.includes("whatsapp-group")
                       ? "bg-green-100 text-green-700"
                       : "hover:bg-green-50 text-gray-700"
                   }`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   <span>WhatsApp Group</span>
                   <MessageCircle className="w-4 h-4" />
@@ -271,21 +283,6 @@ export default function RoundLayout({
                 </button>
               )}
             </div>
-
-            {/* 📜 COMMENTED OUT: Certificate Link */}
-            {/* <div className="mt-3 border-t pt-3">
-              <Link
-                href={`/candidate/processes/${id}/certificate`}
-                className={`flex items-center justify-between px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  pathname.includes("certificate")
-                    ? "bg-green-100 text-green-700"
-                    : "hover:bg-green-50 text-gray-700"
-                }`}
-              >
-                <span>Certificate</span>
-                <FileCheck2 className="w-4 h-4" />
-              </Link>
-            </div> */}
           </div>
         </div>
 
@@ -306,19 +303,14 @@ export default function RoundLayout({
         <IsLockedProvider value={isLocked}>
           <WhatsAppGroupProvider
             isUnlocked={isWhatsAppGroupUnlocked}
-            groupLink={WHATSAPP_GROUP_LINK}
+            groupLink={whatsAppGroupLink}
           >
             {children}
           </WhatsAppGroupProvider>
-
-          {/* 📜 COMMENTED OUT: Certificate Provider */}
-          {/* <CertificateUnlockedProvider value={isCertificateUnlocked}>
-            {children}
-          </CertificateUnlockedProvider> */}
         </IsLockedProvider>
       </main>
 
-      {/* 🔒 Locked Round Modal */}
+      {/* Locked Round Modal */}
       {showLockedModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-[320px] text-center">
@@ -335,7 +327,7 @@ export default function RoundLayout({
         </div>
       )}
 
-      {/* 🧭 Timeline Modal */}
+      {/* Timeline Modal */}
       {showTimelineModal && (
         <TimerModal isOpen={showTimelineModal} onTimelineSet={saveTimeline} />
       )}
